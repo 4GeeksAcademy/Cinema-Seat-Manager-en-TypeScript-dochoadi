@@ -21,7 +21,7 @@ La 2 y la 3 parten de la 1 y no modifican su comportamiento.
 |---------|--------|----------|-------|---------|
 | **1 · Consola** | Gestor de asientos por línea de comandos: matriz 8x10, reservas con validación, conteo, búsqueda de contiguos y 5 escenarios de prueba. | **Sí** | rama [`main`](../../tree/main) · tag [`v1.0-base`](../../tree/v1.0-base) | `npm run test` |
 | **2 · Web básica** (reto extra solicitado) | Mapa de sala clicable con HTML + Tailwind, reutilizando `src/cinema.ts`. | No | tag [`v2.0-web`](../../tree/v2.0-web) | `npm run dev` |
-| **3 · Web mejorada** | Cartelera de una película inventada, butacas de cine, pantalla curva y panel de taquilla. | No | rama [`interfaz-web`](../../tree/interfaz-web) · tag [`v2.1-web`](../../tree/v2.1-web) | `npm run dev` |
+| **3 · Web mejorada** | Cartelera de una película inventada, butacas de cine, pantalla curva y panel de taquilla. | No | rama [`interfaz-web`](../../tree/interfaz-web) · tag [`v2.2-web`](../../tree/v2.2-web) | `npm run dev` |
 
 ### Verlo sin ejecutar nada
 
@@ -33,12 +33,12 @@ La 2 y la 3 parten de la 1 y no modifican su comportamiento.
 |---------------------------------------|----------------------------------|
 | ![Interfaz web mejorada de la versión 3 en escritorio](docs/capturas/v3-web-mejorada.png) | ![Interfaz web mejorada de la versión 3 en móvil](docs/capturas/v3-web-mejorada-movil.png) |
 
-- Código de cada versión: [`v1.0-base`](../../tree/v1.0-base) · [`v2.0-web`](../../tree/v2.0-web) · [`v2.1-web`](../../tree/v2.1-web)
+- Código de cada versión: [`v1.0-base`](../../tree/v1.0-base) · [`v2.0-web`](../../tree/v2.0-web) · [`v2.2-web`](../../tree/v2.2-web)
 - Cambios de la web respecto a la consola: [Pull Request abierto](../../pulls) (no se fusiona hasta después de la evaluación).
 
 ### Ejecutarlo en Codespaces
 
-Abre el repositorio en un Codespace (botón **Code** → **Codespaces**). En la terminal:
+Abre el repositorio en un Codespace (botón **Code** → **Codespaces**). El devcontainer (Node 20) ejecuta `npm install` automáticamente al crearlo. En la terminal:
 
 **Versión 1 · Consola**
 
@@ -47,6 +47,8 @@ git switch main
 npm install
 npm run test        # debe terminar con "Pruebas superadas: 20/20"
 ```
+
+`npm run console` ejecuta el mismo guion (`tsx src/main.ts`).
 
 **Versión 2 · Web básica**
 
@@ -89,13 +91,6 @@ cd Cinema-Seat-Manager-en-TypeScript-dochoadi
 Después, los mismos pasos que en Codespaces para cada versión. En local, la web se abre en `http://localhost:5173`.
 
 > El total de pruebas es **20/20** en la versión 1 y **25/25** en las versiones 2 y 3 (añaden `liberarAsiento` y su escenario de prueba).
-
-## Cómo ejecutarlo
-
-- **GitHub Codespaces:** abre el repositorio en un Codespace. El devcontainer (Node 20) ejecuta `npm install` automáticamente; después, `npm run test`.
-- **En local:** con **Node 20** instalado, clona el repositorio y ejecuta `npm install` y `npm run test`.
-
-`npm run console` ejecuta el mismo guion (`tsx src/main.ts`).
 
 ## Ejemplo de salida
 
@@ -177,7 +172,7 @@ npm run dev         # Vite en el puerto 5173
 Qué se puede hacer:
 
 - **Cartelera** con una película **inventada**, *Eclipse en la Sala 8* (thriller de ciencia ficción, +12, sesión única «Hoy · 18:00 · Sala 1»). El cartel es un SVG original generado en `src/web.ts` (cielo nocturno, sol eclipsado, siluetas de butacas), sin imágenes ni fuentes externas. Los datos están en `src/pelicula.json`.
-- **Mapa de sala** con pantalla curva arriba y los mismos índices que la consola (números de columna arriba y de fila a la izquierda, **sin pasillos**: la sala visual coincide con la matriz). Cada butaca es un botón con un icono SVG de butaca vista desde atrás y tres estados que no dependen solo del color: **libre** (clara, con contorno), **ocupada** (gris oscura con `×`) y **propuesta** (ámbar, contorno grueso y `✓`). Clic, `Enter` o `Espacio` para reservar; flechas para moverse.
+- **Mapa de sala** con pantalla curva arriba y los mismos índices que la consola (números de columna arriba y de fila a la izquierda, **sin pasillos**: la sala visual coincide con la matriz). Cada butaca es un botón con un icono SVG de butaca vista desde atrás y tres estados que no dependen solo del color: **libre** (clara, con contorno), **ocupada** (gris oscura con `×`) y **propuesta** (ámbar con contorno grueso, sin marca para no confundirla con una reservada). Clic, `Enter` o `Espacio` para reservar; flechas para moverse.
 - **Contador en vivo:** ocupados, disponibles y % de ocupación.
 - **Buscar 2 juntos** (resalta el par y le pone el foco) y **Reservar par**.
 - **Reserva rápida** por fila y asiento, para reservas telefónicas.

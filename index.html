@@ -19,9 +19,9 @@
 
     <div class="flex min-h-dvh flex-col">
       <header class="border-b border-slate-300 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
-        <div class="flex flex-wrap items-baseline justify-between gap-2">
-          <h1 class="text-lg font-bold tracking-tight">Taquilla · Sala 8 × 10</h1>
-          <p class="text-sm text-slate-700 dark:text-slate-300">
+        <div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+          <h1 class="shrink-0 text-lg font-bold tracking-tight">Taquilla · Sala 8 × 10</h1>
+          <p class="min-w-0 text-sm text-pretty text-slate-700 sm:text-right dark:text-slate-300">
             Clic o <kbd class="rounded border border-slate-400 px-1 font-mono text-xs">Enter</kbd> para reservar ·
             flechas para moverse
           </p>
@@ -151,7 +151,7 @@
               Reserva rápida (teléfono)
             </h2>
             <form id="formulario-rapido" class="mt-2 flex items-end gap-2" novalidate>
-              <label class="flex flex-1 flex-col text-xs text-slate-700 dark:text-slate-300">
+              <label class="flex min-w-0 flex-1 flex-col text-xs text-slate-700 dark:text-slate-300">
                 Fila (0–7)
                 <input
                   id="campo-fila"
@@ -159,10 +159,10 @@
                   min="0"
                   max="7"
                   inputmode="numeric"
-                  class="mt-1 min-h-10 w-full rounded-lg border border-slate-400 bg-white px-2 text-base text-slate-900 focus-visible:outline-4 focus-visible:outline-offset-1 focus-visible:outline-sky-600 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
+                  class="mt-1 min-h-10 w-full min-w-0 rounded-lg border border-slate-400 bg-white px-2 text-base text-slate-900 focus-visible:outline-4 focus-visible:outline-offset-1 focus-visible:outline-sky-600 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
                 />
               </label>
-              <label class="flex flex-1 flex-col text-xs text-slate-700 dark:text-slate-300">
+              <label class="flex min-w-0 flex-1 flex-col text-xs text-slate-700 dark:text-slate-300">
                 Asiento (0–9)
                 <input
                   id="campo-asiento"
@@ -170,12 +170,12 @@
                   min="0"
                   max="9"
                   inputmode="numeric"
-                  class="mt-1 min-h-10 w-full rounded-lg border border-slate-400 bg-white px-2 text-base text-slate-900 focus-visible:outline-4 focus-visible:outline-offset-1 focus-visible:outline-sky-600 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
+                  class="mt-1 min-h-10 w-full min-w-0 rounded-lg border border-slate-400 bg-white px-2 text-base text-slate-900 focus-visible:outline-4 focus-visible:outline-offset-1 focus-visible:outline-sky-600 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
                 />
               </label>
               <button
                 type="submit"
-                class="min-h-10 rounded-lg bg-slate-800 px-4 font-semibold text-white hover:bg-slate-700 focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-sky-600 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-white"
+                class="min-h-10 shrink-0 rounded-lg bg-slate-800 px-4 font-semibold text-white hover:bg-slate-700 focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-sky-600 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-white"
               >
                 Reservar
               </button>

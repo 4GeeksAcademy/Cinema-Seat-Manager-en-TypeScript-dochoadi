@@ -275,7 +275,7 @@ function pintarCartelera(): void {
 
 /**
  * Crea el dibujo de una butaca: un `<svg>` con un `<use>` del símbolo
- * `#butaca` y un `<text>` para la marca (× ocupada, ✓ propuesta).
+ * `#butaca` y un `<text>` para la marca (× en las ocupadas).
  *
  * @returns El elemento SVG listo para insertar.
  */
@@ -300,8 +300,9 @@ function crearDibujoButaca(): SVGSVGElement {
 
 /**
  * Aplica a un dibujo de butaca los colores y la marca de su estado.
- * El estado no se comunica solo con color: libre sin marca, ocupada con ×
- * y propuesta con ✓ y contorno grueso.
+ * El estado no se comunica solo con color: libre sin marca y contorno fino,
+ * ocupada con × y propuesta con contorno grueso (sin marca, para no
+ * confundirla con una butaca ya reservada).
  *
  * @param dibujo - SVG creado con `crearDibujoButaca`.
  * @param estado - Estado de la butaca.
@@ -319,8 +320,8 @@ function aplicarEstadoButaca(dibujo: SVGSVGElement, estado: EstadoButaca): void 
     marca.textContent = "×";
   } else if (estado === "propuesto") {
     silueta.setAttribute("class", "fill-amber-300 stroke-amber-800 stroke-[3.5] dark:fill-amber-400 dark:stroke-amber-100");
-    marca.setAttribute("class", "fill-slate-900");
-    marca.textContent = "✓";
+    marca.setAttribute("class", "");
+    marca.textContent = "";
   } else {
     silueta.setAttribute("class", "fill-white stroke-slate-600 stroke-[1.5] dark:fill-slate-200 dark:stroke-slate-400");
     marca.setAttribute("class", "");
@@ -360,7 +361,7 @@ function crearPantalla(): HTMLDivElement {
 function construirLeyenda(): void {
   const leyenda = obtenerElemento<HTMLUListElement>("leyenda");
   const estados: EstadoButaca[] = ["libre", "ocupado", "propuesto"];
-  const textos: string[] = ["Libre", "Ocupada (×)", "Propuesta (✓)"];
+  const textos: string[] = ["Libre", "Ocupada (×)", "Propuesta (borde grueso)"];
   for (let indice = 0; indice < estados.length; indice++) {
     const elemento = document.createElement("li");
     elemento.className = "flex items-center gap-2";

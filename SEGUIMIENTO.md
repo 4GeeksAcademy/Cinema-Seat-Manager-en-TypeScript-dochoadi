@@ -17,6 +17,7 @@ Registro cronológico de cada prompt aplicado al repositorio, según el protocol
 | 7 | Interfaz web de taquilla (rama `interfaz-web`, opcional) | OK |
 | 7b | Cartelera de película inventada y butacas SVG (rama `interfaz-web`) | OK |
 | 7c | Cómo ver cada versión (README en `main` e `interfaz-web`) | OK |
+| 8a | Cabecera sin desbordamiento, butaca propuesta sin ✓, README unificado (rama `interfaz-web`) | OK |
 
 ---
 
@@ -1075,7 +1076,7 @@ Enséñame git log --oneline -2, git tag -n y git status -sb.
 - **Checklist anti-objetos:** sin cambios en `src/`; grep → vacío.
 - **Errores:** ninguno.
 - **Estado:** OK
-- **Commit:** pendiente (se registra en el Prompt 8)
+- **Commit:** `303cef2`
 
 ---
 
@@ -1341,7 +1342,7 @@ Interfaz (jsdom): 30/30
   - **Pendiente de prueba manual del usuario en un navegador real:** aspecto del cartel y de las butacas en claro / oscuro, elevación al pasar el ratón, layout en 3 columnas (≥ 1280 px), en pantallas medianas y en móvil (scroll solo en el mapa), foco visible sobre las butacas y el puerto 5173 en Codespaces.
 - **Errores:** ninguno.
 - **Estado:** OK
-- **Commit:** pendiente (se registra en el Prompt 8)
+- **Commit:** `d06e98e`
 
 ---
 
@@ -1403,4 +1404,69 @@ Nota final: el total de pruebas es 20/20 en la versión 1 y 25/25 en las version
 - **`npm run test ; echo "exit: $?"`:** `Pruebas superadas: 25/25` / `exit: 0`.
 - **Errores:** ninguno.
 - **Estado:** OK
-- **Commit:** pendiente (se registra en el Prompt 8)
+- **Commit:** `f5dfe52`
+
+---
+
+## Prompt 8a — Cabecera sin desbordamiento, butaca propuesta sin ✓ y README unificado (rama `interfaz-web`)
+
+- **Fecha:** 2026-11-09
+- **Rama de esta entrada:** `interfaz-web`. El punto 1 (README en `main`) se registró en el SEGUIMIENTO de `main` (commit `3fe046a`).
+- **Prompt literal:**
+
+````text
+Usa la skill cinema-seat-manager. NUNCA muevas ni borres tags existentes.
+
+1. En main:
+   - README.md: elimina la sección antigua "Cómo ejecutarlo" (su contenido ya está en "Cómo ver cada versión"); si contiene algo que no esté en la nueva, intégralo ahí y dime qué era. Revisa que ningún enlace interno del README apunte a la sección eliminada.
+   - En la tabla de "Cómo ver cada versión", la versión 3 pasa a ser: rama interfaz-web · tag v2.2-web (en lugar de v2.1-web).
+   - SEGUIMIENTO.md: rellena el Commit del Prompt 6b con 303cef2 y el del Prompt 7c (main) con 1617114. Añade la entrada del Prompt 8a con Commit "pendiente (se registra en el Prompt 8b)".
+   - npm run typecheck y npm run test (20/20). Commit + push:
+     docs: unificar instrucciones de ejecución y apuntar a v2.2-web
+     (cuerpo: "Prompt 8a: elimina la sección duplicada 'Cómo ejecutarlo' y actualiza el tag de la versión 3.")
+
+2. En interfaz-web (git switch interfaz-web):
+   - Mismos cambios de README que en main. La sección "Cómo ver cada versión" debe seguir siendo idéntica entre ramas (compruébalo con diff).
+   - Cabecera de la web: el texto de ayuda "Clic o Enter para reservar · flechas para moverse" se corta por la derecha. Corrígelo para que nunca desborde: en anchos estrechos baja debajo del título o se divide en líneas; en móvil puede ocultarse si la misma ayuda aparece en otro lugar visible. Revisa también que ningún otro elemento de la cabecera o del panel provoque scroll horizontal de la página.
+
+3. (Opcional — bórralo si no lo quieres) Butaca propuesta: quita el ✓ porque puede confundirse con "ya reservada". Mantén el relleno ámbar y el contorno grueso, y actualiza la leyenda a "Propuesta (borde grueso)". El aria-label sigue diciendo "propuesto". Ajusta las comprobaciones que dependan del ✓.
+
+4. Sigue en interfaz-web:
+   - src/cinema.ts y src/main.ts NO se tocan. npm run typecheck y npm run test (25/25).
+   - SEGUIMIENTO.md: rellena el Commit del Prompt 7b con d06e98e y el del Prompt 7c (rama) con f5dfe52. Entrada del Prompt 8a con Commit "pendiente (se registra en el Prompt 8b)".
+   - Commit + push:
+     fix(web): evitar desbordamiento de la cabecera y unificar README
+     (cuerpo: "Prompt 8a: la ayuda de la cabecera ya no se corta; [si aplica: butaca propuesta sin ✓]; README sin sección duplicada.")
+   - Tag nuevo: git tag -a v2.2-web -m "Versión 3 final: web mejorada" && git push origin v2.2-web
+
+5. Vuelve a main. Enséñame:
+   git log --oneline -1 main, git log --oneline -1 interfaz-web, git show-ref --tags -d (los tres tags antiguos no deben haberse movido), el diff de la sección entre ramas (vacío) y git status -sb.
+   Dime qué has podido verificar tú de la cabecera y qué tengo que mirar yo en el navegador (a 1280 px, a 1024 px y a 390 px).
+````
+
+- **Objetivo:** que la cabecera de la web nunca desborde ni provoque scroll horizontal, quitar el ✓ de la butaca propuesta (punto opcional, aplicado) y dejar el README sin la sección duplicada, con la versión 3 en `v2.2-web`.
+- **Diagnóstico del desbordamiento (por análisis del CSS):** la cabecera ya tenía `flex-wrap`, pero el formulario de reserva rápida no podía encogerse: cada `<input type="number">` tiene un ancho intrínseco de unos 170 px y su `<label class="flex-1">` heredaba `min-width: auto`. El formulario necesitaba unos 450 px dentro de un panel de 320 px (a 1024 px) o 326 px (a 390 px); se salía del panel, ensanchaba la página y la cabecera parecía cortada por la derecha.
+- **Ficheros modificados:**
+  - `index.html`:
+    - cabecera en columna en móvil (`flex-col`) y en fila desde `sm` (`sm:flex-row sm:justify-between`); título `shrink-0`; ayuda `min-w-0 text-pretty sm:text-right`, que se divide en líneas si no cabe. No se oculta en móvil: no hay otro sitio visible con la misma ayuda.
+    - formulario de reserva rápida: `label` e `input` con `min-w-0` y botón `shrink-0`, para que los campos se estrechen en lugar de desbordar.
+  - `src/web.ts`: la butaca propuesta ya no muestra ✓ (relleno ámbar y contorno grueso se mantienen; `aria-label` sigue diciendo "propuesto"); leyenda "Propuesta (borde grueso)"; JSDoc actualizado.
+  - `README.md`: misma sección "Cómo ver cada versión" que en `main` (sin "Cómo ejecutarlo", con los dos datos integrados y la versión 3 en `v2.2-web`); descripción de la butaca propuesta sin ✓.
+  - `EVALUACION.md`: descripción de los estados de butaca y del contraste sin ✓.
+  - `SEGUIMIENTO.md`: hashes de los Prompts 6b (`303cef2`, también pendiente en esta rama), 7b (`d06e98e`) y 7c (`f5dfe52`); esta entrada.
+  - **Sin cambios:** `src/cinema.ts`, `src/main.ts`, `tsconfig.json`, `package.json`. Tags existentes sin mover.
+- **Revisión de otros posibles desbordamientos:**
+  - contadores (`grid-cols-3`), botones de pareja y de deshacer (`grid-cols-2`): pistas `minmax(0,1fr)` y texto que se divide en líneas;
+  - registro: los mensajes tienen espacios y se dividen en líneas;
+  - ficha compacta: título con `truncate` dentro de `min-w-0`;
+  - mapa: `min-w-[30rem]` dentro de un contenedor `overflow-x-auto` en una sección `min-w-0`, así que el scroll queda dentro del mapa;
+  - rejilla principal: pistas `minmax(0,1fr)`.
+- **Sección compartida:** `diff` de "Cómo ver cada versión" entre `main` e `interfaz-web` → vacío (81 líneas).
+- **`npm run typecheck`:** exit 0. **`npm run test ; echo "exit: $?"`:** `Pruebas superadas: 25/25` / `exit: 0`.
+- **Verificación de la interfaz:**
+  - `vite build` OK; el CSS incluye `sm:flex-row`, `text-pretty`, `sm:text-right`, `min-w-0` y `shrink-0`.
+  - Prueba en jsdom (fuera del repo) actualizada: sin ✓ en la butaca propuesta ni en la página, texto de la leyenda y clases anti-desbordamiento de cabecera y formulario. Resultado: `Interfaz (jsdom): 32/32`. Un primer intento dio 31/32 por una expectativa mal escrita en la prueba (el texto de la leyenda incluye la × del dibujo de la butaca ocupada); se corrigió la prueba, no la interfaz.
+  - **No verificado por el asistente:** el layout real. Se intentó usar Chromium headless en el scratchpad, pero faltan librerías del sistema (`libnss3`, `libgbm`, `libasound`…) y sin root no pueden instalarse. jsdom no calcula el layout. La comprobación visual a 1280, 1024 y 390 px queda para el usuario.
+- **Errores:** ninguno.
+- **Estado:** OK
+- **Commit:** pendiente (se registra en el Prompt 8b)
