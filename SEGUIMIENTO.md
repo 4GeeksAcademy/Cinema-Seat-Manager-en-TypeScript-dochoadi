@@ -16,6 +16,7 @@ Registro cronológico de cada prompt aplicado al repositorio, según el protocol
 | 6b | Separar entregas (main + v1.0-base / interfaz-web + v2.0-web) | OK |
 | 7c | Cómo ver cada versión (README en `main` e `interfaz-web`) | OK |
 | 8a | README sin sección duplicada, versión 3 → `v2.2-web` (+ cabecera web en `interfaz-web`) | OK |
+| 8b | Evaluación final independiente de la Entrega 1 (subagente con contexto limpio) | OK |
 
 ---
 
@@ -1186,4 +1187,86 @@ Usa la skill cinema-seat-manager. NUNCA muevas ni borres tags existentes.
 - **`npm run test ; echo "exit: $?"`:** `Pruebas superadas: 20/20` / `exit: 0`.
 - **Errores:** ninguno.
 - **Estado:** OK
-- **Commit:** pendiente (se registra en el Prompt 8b)
+- **Commit:** `3fe046a`
+
+---
+
+## Prompt 8b — Evaluación final independiente (rama `main`)
+
+- **Fecha:** 2026-11-09
+- **Prompt literal:**
+
+`````text
+Trabaja en main (git switch main). Vamos a hacer la evaluación final de la Entrega 1 con un evaluador independiente.
+
+1. Lanza un subagente (herramienta Task/Agent, tipo general-purpose) con contexto limpio y EXACTAMENTE estas instrucciones:
+
+---
+Eres evaluador de 4Geeks Academy. Evalúa con rigor el proyecto "Cinema Seat Manager en TypeScript" de este repositorio (rama main). No conoces a su autor ni su historia.
+
+REGLAS:
+- NO leas EVALUACION.md, SEGUIMIENTO.md, ERRORES.md, CONTEXT.md, CLAUDE.md ni .claude/ antes de emitir tu veredicto. Evalúa solo el código, el README y lo que ejecutes.
+- Cada veredicto necesita evidencia: comando + fragmento de salida, o fichero:función + fragmento de código.
+- Si dudas, marca "Parcial" y explica por qué. No regales puntos.
+
+PASOS:
+a) Clon limpio: git clone de este repositorio en /tmp/eval-final, npm ci, npm run typecheck, npm run test ; echo "exit: $?".
+b) Integridad de la entrega: git diff v1.0-base main -- src/ package.json tsconfig.json debe estar vacío (lo evaluado = lo etiquetado).
+c) Lee src/cinema.ts y src/main.ts completos.
+d) Casos propios no presentes en main.ts (créalos en /tmp, nunca en el repo): fila negativa, decimal, NaN, columna 10, reservar dos veces, una fila con libres alternos (no debe proponer par en ella), un par en la última columna posible (8,9), sala con un único par al final de la última fila.
+
+ENUNCIADO (requisitos):
+- Función que inicializa una matriz 8 filas x 10 columnas. Ocupado = 1, disponible = 0.
+- Función que muestra la sala por consola con X ocupado, L libre e índices de fila y columna.
+- Función para reservar dado fila y columna (0 → 1), que valide si ya está ocupado y devuelva un mensaje de éxito o fallo.
+- Función que cuenta y devuelve ocupados y disponibles.
+- Función que busca dos asientos libres contiguos horizontalmente en la misma fila, devuelve sus posiciones, devuelve el primero si hay varios e indica claramente si no hay.
+- Pruebas: sala vacía, parcialmente ocupada, casi llena con solo asientos sueltos, completamente llena. Mensajes claros para cada operación. Comentarios que expliquen cada función.
+- IMPORTANTE: no usar objetos ni clases; datos de asientos solo en un arreglo bidimensional (JSON solo para metadatos).
+
+CRITERIOS DE EVALUACIÓN (puntúa cada uno: Cumple / Parcial / No cumple):
+1. Uso correcto de un arreglo bidimensional (matriz) para representar los asientos del cine.
+2. Implementación adecuada de funciones con parámetros y valores de retorno.
+3. Uso correcto de sentencias condicionales (if, else) para validar la disponibilidad de los asientos.
+4. Uso correcto de bucles (for, while) para procesar y mostrar la matriz de asientos.
+5. Que la función de búsqueda identifique correctamente asientos contiguos libres de forma horizontal.
+6. Que el código sea legible, con nombres de variables y funciones significativos.
+7. Que el programa se ejecute sin errores y produzca la salida esperada al probarlo.
+8. Que la salida por consola sea clara y útil para el personal del cine que vaya a usar el sistema.
+
+ENTREGA tu informe con:
+- Tabla: Criterio | Veredicto | Evidencia | Observaciones.
+- Tabla de requisitos del enunciado: Requisito | Veredicto | Evidencia.
+- Restricción "sin objetos ni clases": veredicto + evidencia.
+- Resultado de tus casos propios.
+- Hallazgos ordenados por gravedad (bloqueante / mejora / cosmético). Si no hay, dilo.
+- Veredicto global: APTO / APTO CON OBSERVACIONES / NO APTO.
+---
+
+2. Cuando el subagente termine:
+   - Compara su informe con la tabla existente de EVALUACION.md. Lista las discrepancias (criterios donde el evaluador independiente da menos nota que la autoevaluación).
+   - Añade AL FINAL de EVALUACION.md una sección "## Evaluación final independiente" con: fecha, commit evaluado (hash de main), confirmación de integridad respecto a v1.0-base, método (subagente con contexto limpio, sin acceso a la documentación interna), su informe completo, las discrepancias encontradas y el veredicto global.
+   - No modifiques la autoevaluación anterior: las dos quedan visibles.
+   - Si hay hallazgos BLOQUEANTES: NO los corrijas en este prompt. Regístralos en ERRORES.md, dime cuáles son y para. Decidiremos juntos si se corrige (implicaría una nueva versión v1.1-base).
+   - Los hallazgos de mejora o cosméticos quedan documentados, sin cambiar código.
+
+3. SEGUIMIENTO.md: entrada del Prompt 8b; rellena el Commit del Prompt 8a (main) con su hash. Commit + push en main:
+   docs: añadir evaluación final independiente
+   (cuerpo: "Prompt 8b: evaluación de la Entrega 1 por subagente con contexto limpio; integridad respecto a v1.0-base; veredicto y discrepancias con la autoevaluación.")
+
+Enséñame: el veredicto global, la tabla de los 8 criterios del evaluador, las discrepancias, git log --oneline -1 y git status -sb.
+`````
+
+- **Objetivo:** que un evaluador independiente, sin acceso a la documentación interna ni a la historia del desarrollo, evalúe la Entrega 1 y contrastar su resultado con la autoevaluación.
+- **Método:** subagente `general-purpose` lanzado con las instrucciones del prompt, literales. Trabajó sobre un clon limpio en `/tmp/eval-final` y con casos propios en `/tmp/eval-casos`, sin tocar el repositorio.
+- **Commit evaluado:** `3fe046a`. **Integridad:** `git diff v1.0-base main -- src/ package.json tsconfig.json` → vacío (comprobado por el evaluador y por el autor).
+- **Resultado:** **APTO**. Los 8 criterios y los 8 requisitos dan "Cumple"; la restricción "sin objetos ni clases" también se cumple; los 12 casos propios dan el resultado correcto (uno, `[[]]`, fuera del enunciado, con un mensaje incoherente menor).
+- **Hallazgos:** ninguno bloqueante.
+  - **Mejora:** plantilla web residual en `main` (`index.html` "Hello World with Typescript" que carga `/rigo-baby.jpg`, inexistente, y ejecuta `main.ts` en el navegador); avisos de `npm audit`.
+  - **Cosméticos:** rango "0–-1" con `[[]]`; "L" para valores distintos de 0/1; referencia "ERR-001" en la salida; "test" como guion propio.
+- **Discrepancias con la autoevaluación:** ningún criterio con menor nota. Hay cuatro hallazgos que la autoevaluación no recogía; el principal es la plantilla residual de `index.html` en `main`, que el autor confirmó (`grep -n "rigo-baby" index.html` → línea 14).
+- **Ficheros modificados:** `EVALUACION.md` (sección final "Evaluación final independiente", con el informe completo; la autoevaluación anterior no se toca), `SEGUIMIENTO.md` (hash del Prompt 8a en `main` y esta entrada).
+- **Sin cambios de código.** `ERRORES.md` no cambia: solo se registrarían hallazgos bloqueantes, y no los hay.
+- **`npm run typecheck`:** exit 0. **`npm run test`:** `Pruebas superadas: 20/20`, exit 0.
+- **Estado:** OK
+- **Commit:** pendiente (último prompt registrado; su hash queda en `git log`)
