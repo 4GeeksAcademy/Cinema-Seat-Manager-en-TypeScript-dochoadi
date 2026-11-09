@@ -12,6 +12,7 @@ Registro cronológico de cada prompt aplicado al repositorio, según el protocol
 | 3 | Búsqueda de asientos contiguos (while + parada en el primer par) | OK |
 | 4 | Guion de pruebas (5 escenarios + robustez) y corrección de mensajes de reserva | OK |
 | 5 | Auditoría de cumplimiento de criterios (evidencias, prueba de la prueba, riesgos) | OK |
+| 6 | README final y npm audit fix (sin --force) | OK |
 
 ---
 
@@ -918,4 +919,95 @@ exit: 0
 - **`npm audit`:** `5 vulnerabilities (1 moderate, 4 high)`; registrado en "Riesgos conocidos". `esbuild` solo se corrige con `--force` (Vite 8, cambio incompatible); `nanoid`, `postcss` y `source-map-js` tendrían arreglo con `npm audit fix` sin `--force`, no aplicado en este prompt.
 - **Errores:** ninguno nuevo (la auditoría no encontró ❌).
 - **Estado:** OK
-- **Commit:** pendiente (se registra en el Prompt 6)
+- **Commit:** `d923fc4`
+
+---
+
+## Prompt 6 — README final y npm audit fix
+
+- **Fecha:** 2026-11-09
+- **Prompt literal:**
+
+````text
+Usa la skill cinema-seat-manager.
+
+0. Mantenimiento previo:
+   - SEGUIMIENTO.md: rellena el Commit del Prompt 5 con d923fc4.
+   - Ejecuta `npm audit fix` (SIN --force). Después npm run typecheck y npm run test ; echo "exit: $?" deben seguir en verde (20/20, exit 0). Pega el resumen de npm audit antes y después.
+   - EVALUACION.md: actualiza el riesgo de npm audit con el estado real tras el fix (qué queda pendiente y por qué). En el criterio 4, la evidencia debe referirse a src/cinema.ts:buscarAsientosContiguos (dos while), no al recuento de líneas del grep (una de ellas es un comentario).
+   - Registra el audit fix solo en SEGUIMIENTO.md (mantenimiento, no error).
+
+1. Reescribe README.md en español para alguien que abre el repo por primera vez (evaluador incluido). Secciones:
+
+   - Título y una frase: qué es y para quién (personal de taquilla, sala 8x10).
+   - "Verificar en 30 segundos": npm install → npm run test → debe terminar con "Pruebas superadas: 20/20". Y npm run typecheck.
+   - Cómo ejecutarlo: Codespaces (el devcontainer instala dependencias) y local (Node 20).
+   - Ejemplo real de salida: fragmento corto copiado de npm run test (la sala del enunciado + conteo + par contiguo). No inventes salida: cópiala de una ejecución.
+   - API: tabla con firma, qué hace y qué devuelve de TODAS las funciones exportadas de src/cinema.ts (incluidas mostrarResultadoContiguos y mensajeResultadoContiguos).
+   - Decisiones de diseño:
+     * Solo arreglo bidimensional number[][]; sin objetos ni clases; retornos como tuplas o null.
+     * Criterio de "primer par" (recorrido fila a fila) y nota sobre la imagen del enunciado (ERR-000), en dos líneas con enlace a ERRORES.md.
+     * Validaciones de reservarAsiento y formato "estado: posición" de los mensajes.
+   - Escenarios de prueba: lista breve de los 5 + extra, con el resultado esperado de cada uno.
+   - Estructura del proyecto (árbol, sin node_modules) y enlaces a CONTEXT.md, SEGUIMIENTO.md, ERRORES.md, EVALUACION.md.
+   - Desarrollo asistido por IA: el proyecto se construyó con Claude Code mediante prompts secuenciales documentados en SEGUIMIENTO.md; los errores y su resolución están en ERRORES.md; la skill del proyecto está en .claude/skills/cinema-seat-manager/.
+   - Autor: Daniel Ochoa Díaz.
+
+   Reglas: sin badges ni restos de la plantilla typescript-hello; no dupliques la tabla de EVALUACION.md, enlázala; que se lea en 2 minutos.
+
+2. SEGUIMIENTO.md: entrada del Prompt 6, Commit "pendiente (se registra en el Prompt 7)".
+
+Cierra con un único commit + push:
+docs: redactar README final y aplicar npm audit fix
+(cuerpo: "Prompt 6: README con verificación rápida, API, decisiones de diseño, escenarios y trazabilidad del desarrollo con IA; npm audit fix sin --force; evidencia del criterio 4 por función.")
+Enséñame `git log --oneline -2` y `git status -sb`.
+````
+
+- **Objetivo:** redactar el README definitivo para quien abre el repositorio por primera vez (evaluador incluido), aplicar `npm audit fix` sin `--force` y ajustar la evidencia del criterio 4.
+- **Ficheros modificados:**
+  - `README.md`: reescrito (verificación rápida, ejecución, salida real, API de las 7 funciones exportadas, decisiones de diseño, escenarios, estructura, desarrollo con IA, autor).
+  - `package-lock.json`: `npm audit fix` (sin `--force`).
+  - `EVALUACION.md`: criterio 4 con evidencia por función (`src/cinema.ts:buscarAsientosContiguos`, dos `while`) en lugar del recuento del grep; riesgo de `npm audit` con el estado real tras el fix.
+  - `SEGUIMIENTO.md`: hash del Prompt 5 y esta entrada.
+- **Ficheros creados:** ninguno.
+- **Mantenimiento — `npm audit fix` (sin `--force`):**
+  - Paquetes actualizados en `package-lock.json`: `nanoid` 3.3.11 → 3.3.20, `postcss` 8.5.6 → 8.5.32, `source-map-js` 1.2.1 → 1.2.2.
+  - Resumen **antes**:
+
+```text
+esbuild  <=0.24.2 || 0.27.3 - 0.28.0
+Severity: moderate
+fix available via `npm audit fix --force`
+Will install vite@8.3.7, which is a breaking change
+  vite  <=6.4.3
+nanoid  <=3.3.17
+Severity: high
+fix available via `npm audit fix`
+postcss  <=8.5.22
+Severity: high
+fix available via `npm audit fix`
+source-map-js  1.0.0 - 1.2.1
+Severity: high
+fix available via `npm audit fix`
+5 vulnerabilities (1 moderate, 4 high)
+```
+
+  - Resumen **después**:
+
+```text
+esbuild  <=0.24.2 || 0.27.3 - 0.28.0
+Severity: moderate
+fix available via `npm audit fix --force`
+Will install vite@8.3.7, which is a breaking change
+  vite  <=6.4.3
+2 vulnerabilities (1 moderate, 1 high)
+```
+
+  - Quedan 2 entradas y no solo `esbuild`: `vite <=6.4.3` aparece como **high** por avisos propios de su servidor de desarrollo (path traversal en `.map`, `server.fs.deny`/`allow`, `launch-editor` en Windows), además de depender de `esbuild`. Antes del fix también estaba, anidado bajo `esbuild`. Ambos solo se corrigen con `--force` (Vite 8, cambio incompatible), que no se aplica. Ninguno afecta a la CLI: `tsx` usa `esbuild` 0.27.7 solo para transpilar, sin servidor.
+- **README — fragmento de salida:** copiado de una ejecución real de `npm run test`; comprobado con `diff` entre el bloque del README y la salida → idéntico (19 líneas). Sin restos de la plantilla (`grep -niE "typescript-hello|badge|shields|rigo"` → vacío).
+- **`npm run typecheck`:** `tsc --noEmit` → exit 0 (tras el audit fix).
+- **`npm run test ; echo "exit: $?"`:** `Pruebas superadas: 20/20` / `exit: 0` (tras el audit fix).
+- **Checklist anti-objetos:** sin cambios en `src/`; `grep -nE "\bclass\b|\binterface\b|new Map|new Set" src/` → vacío.
+- **Errores:** ninguno.
+- **Estado:** OK
+- **Commit:** pendiente (se registra en el Prompt 7)
