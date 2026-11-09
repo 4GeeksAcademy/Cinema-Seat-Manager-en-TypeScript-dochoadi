@@ -15,6 +15,7 @@ Registro cronológico de cada prompt aplicado al repositorio, según el protocol
 | 6 | README final y npm audit fix (sin --force) | OK |
 | 6b | Separar entregas (main + v1.0-base / interfaz-web + v2.0-web) | OK |
 | 7c | Cómo ver cada versión (README en `main` e `interfaz-web`) | OK |
+| 8a | README sin sección duplicada, versión 3 → `v2.2-web` (+ cabecera web en `interfaz-web`) | OK |
 
 ---
 
@@ -1073,7 +1074,7 @@ Enséñame git log --oneline -2, git tag -n y git status -sb.
 - **Checklist anti-objetos:** sin cambios en `src/`; grep → vacío.
 - **Errores:** ninguno.
 - **Estado:** OK
-- **Commit:** pendiente (se registra en el Prompt 8)
+- **Commit:** `303cef2`
 
 ---
 
@@ -1135,4 +1136,54 @@ Nota final: el total de pruebas es 20/20 en la versión 1 y 25/25 en las version
 - **`npm run test ; echo "exit: $?"`:** `Pruebas superadas: 20/20` / `exit: 0`.
 - **Errores:** ninguno.
 - **Estado:** OK
-- **Commit:** pendiente (se registra en el Prompt 8)
+- **Commit:** `1617114`
+
+---
+
+## Prompt 8a — README unificado y versión 3 en `v2.2-web` (rama `main`)
+
+- **Fecha:** 2026-11-09
+- **Rama de esta entrada:** `main`. Los puntos 2–4 del prompt (cabecera web, butaca propuesta, tag `v2.2-web`) se aplican en `interfaz-web` y se registran en el SEGUIMIENTO de esa rama.
+- **Prompt literal:**
+
+````text
+Usa la skill cinema-seat-manager. NUNCA muevas ni borres tags existentes.
+
+1. En main:
+   - README.md: elimina la sección antigua "Cómo ejecutarlo" (su contenido ya está en "Cómo ver cada versión"); si contiene algo que no esté en la nueva, intégralo ahí y dime qué era. Revisa que ningún enlace interno del README apunte a la sección eliminada.
+   - En la tabla de "Cómo ver cada versión", la versión 3 pasa a ser: rama interfaz-web · tag v2.2-web (en lugar de v2.1-web).
+   - SEGUIMIENTO.md: rellena el Commit del Prompt 6b con 303cef2 y el del Prompt 7c (main) con 1617114. Añade la entrada del Prompt 8a con Commit "pendiente (se registra en el Prompt 8b)".
+   - npm run typecheck y npm run test (20/20). Commit + push:
+     docs: unificar instrucciones de ejecución y apuntar a v2.2-web
+     (cuerpo: "Prompt 8a: elimina la sección duplicada 'Cómo ejecutarlo' y actualiza el tag de la versión 3.")
+
+2. En interfaz-web (git switch interfaz-web):
+   - Mismos cambios de README que en main. La sección "Cómo ver cada versión" debe seguir siendo idéntica entre ramas (compruébalo con diff).
+   - Cabecera de la web: el texto de ayuda "Clic o Enter para reservar · flechas para moverse" se corta por la derecha. Corrígelo para que nunca desborde: en anchos estrechos baja debajo del título o se divide en líneas; en móvil puede ocultarse si la misma ayuda aparece en otro lugar visible. Revisa también que ningún otro elemento de la cabecera o del panel provoque scroll horizontal de la página.
+
+3. (Opcional — bórralo si no lo quieres) Butaca propuesta: quita el ✓ porque puede confundirse con "ya reservada". Mantén el relleno ámbar y el contorno grueso, y actualiza la leyenda a "Propuesta (borde grueso)". El aria-label sigue diciendo "propuesto". Ajusta las comprobaciones que dependan del ✓.
+
+4. Sigue en interfaz-web:
+   - src/cinema.ts y src/main.ts NO se tocan. npm run typecheck y npm run test (25/25).
+   - SEGUIMIENTO.md: rellena el Commit del Prompt 7b con d06e98e y el del Prompt 7c (rama) con f5dfe52. Entrada del Prompt 8a con Commit "pendiente (se registra en el Prompt 8b)".
+   - Commit + push:
+     fix(web): evitar desbordamiento de la cabecera y unificar README
+     (cuerpo: "Prompt 8a: la ayuda de la cabecera ya no se corta; [si aplica: butaca propuesta sin ✓]; README sin sección duplicada.")
+   - Tag nuevo: git tag -a v2.2-web -m "Versión 3 final: web mejorada" && git push origin v2.2-web
+
+5. Vuelve a main. Enséñame:
+   git log --oneline -1 main, git log --oneline -1 interfaz-web, git show-ref --tags -d (los tres tags antiguos no deben haberse movido), el diff de la sección entre ramas (vacío) y git status -sb.
+   Dime qué has podido verificar tú de la cabecera y qué tengo que mirar yo en el navegador (a 1280 px, a 1024 px y a 390 px).
+````
+
+- **Objetivo:** quitar la sección duplicada "Cómo ejecutarlo" del README y apuntar la versión 3 al tag `v2.2-web`.
+- **Ficheros modificados:**
+  - `README.md`: eliminada "Cómo ejecutarlo". Dos datos suyos no estaban en "Cómo ver cada versión" y se han integrado ahí: que el devcontainer (Node 20) ejecuta `npm install` automáticamente al crear el Codespace, y que `npm run console` ejecuta el mismo guion (`tsx src/main.ts`). La versión 3 pasa a `rama interfaz-web · tag v2.2-web` (tabla y enlaces "Código de cada versión"). Ningún enlace interno (`](#…)`) apuntaba a la sección eliminada.
+  - `SEGUIMIENTO.md`: hashes del Prompt 6b (`303cef2`) y del Prompt 7c en `main` (`1617114`); esta entrada.
+- **Ficheros creados:** ninguno. **Tags:** ninguno movido ni borrado.
+- **Nota:** el enlace a `v2.2-web` devuelve 404 hasta que se cree el tag en `interfaz-web` (mismo prompt).
+- **`npm run typecheck`:** exit 0.
+- **`npm run test ; echo "exit: $?"`:** `Pruebas superadas: 20/20` / `exit: 0`.
+- **Errores:** ninguno.
+- **Estado:** OK
+- **Commit:** pendiente (se registra en el Prompt 8b)
