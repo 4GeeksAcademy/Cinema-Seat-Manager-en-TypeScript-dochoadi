@@ -19,6 +19,7 @@ Registro cronológico de cada prompt aplicado al repositorio, según el protocol
 | 7c | Cómo ver cada versión (README en `main` e `interfaz-web`) | OK |
 | 8a | Cabecera sin desbordamiento, butaca propuesta sin ✓, README unificado (rama `interfaz-web`) | OK |
 | 8c | "Otra opción" en la búsqueda de pareja (rama `interfaz-web`) | OK |
+| 8d | Cierre: README sin capturas, versiones 1 y 3 en `v1.1-base` / `v2.3-web`, tags finales | OK |
 
 ---
 
@@ -1478,7 +1479,7 @@ Usa la skill cinema-seat-manager. NUNCA muevas ni borres tags existentes.
 
 - **Fecha:** 2026-11-09
 - **Rama de esta entrada:** `interfaz-web` (parte B). La parte A (`index.html` mínima en `main`, commit `5a2bf1a`) se registra en el SEGUIMIENTO de `main`.
-- **Prompt literal** (llegó cortado al final, en el punto 10: "…reservar el"; se registra tal cual):
+- **Prompt literal** (llegó cortado al final, en el punto 10: "…reservar el". En el Prompt 8d se completa con el final literal facilitado por el usuario: "propuesto, deshacer). NO crees tags: …" hasta "…git status -sb."; no se ha inventado texto):
 
 `````text
 Usa la skill cinema-seat-manager. NUNCA muevas ni borres tags existentes. Etiqueta solo después de que yo confirme en el navegador.
@@ -1508,7 +1509,9 @@ PARTE B — interfaz-web (git switch interfaz-web)
    (cuerpo: "Prompt 8c: 'Otra opción' recorre los pares disponibles reutilizando buscarAsientosContiguos sobre una copia de la sala; registro sin duplicados.")
 
 PARTE C — antes de etiquetar
-10. Deja arrancado npm run dev en interfaz-web y dime qué tengo que comprobar en el navegador (pulsar "Otra opción" varias veces hasta el reinicio, reservar el
+10. Deja arrancado npm run dev en interfaz-web y dime qué tengo que comprobar en el navegador (pulsar "Otra opción" varias veces hasta el reinicio, reservar el propuesto, deshacer). NO crees tags: te los pediré cuando confirme que todo está bien.
+
+Enséñame git log --oneline -1 main, git log --oneline -1 interfaz-web y git status -sb.
 `````
 
 - **Verificación manual del Prompt 8a (hecha por el usuario en su navegador):** midió con `getBoundingClientRect` que ningún elemento sobrepasa `innerWidth` y que `scrollWidth > innerWidth` es `false`. El arreglo de la cabecera y del formulario funciona; **el layout no se toca** en este prompt.
@@ -1524,7 +1527,7 @@ PARTE C — antes de etiquetar
   - `README.md`: comportamiento de "Otra opción" en la sección de la interfaz web.
   - `SEGUIMIENTO.md`: hash del Prompt 8a en esta rama (`e433b74`) y esta entrada.
   - **Sin cambios:** `src/cinema.ts`, `src/main.ts` e `index.html` (`git diff v2.2-web -- src/cinema.ts src/main.ts index.html` → vacío).
-- **Consecuencia del diseño pedido:** como se bloquean las dos butacas de cada par propuesto, las opciones no se solapan. En una fila vacía se ofrecen (0,0)-(0,1), (0,2)-(0,3)…, pero no (0,1)-(0,2).
+- **Decisión: las parejas propuestas no se solapan** (confirmada por el usuario en el Prompt 8d). como se bloquean las dos butacas de cada par propuesto, las opciones no se solapan. En una fila vacía se ofrecen (0,0)-(0,1), (0,2)-(0,3)…, pero no (0,1)-(0,2).
 - **`npm run typecheck`:** exit 0. **`npm run test`:** `Pruebas superadas: 25/25`. **`vite build`:** OK.
 - **Checklist anti-objetos (`src/web.ts`):** sin `interface`, `Map`, `Set`, `this` ni literales `{…}`; `process` solo en el comentario de cabecera. JSDoc 27/27.
 - **Prueba jsdom (fuera del repo):** `Interfaz (jsdom): 43/43`. Bloque nuevo:
@@ -1549,4 +1552,43 @@ Interfaz (jsdom): 43/43
 - **Tag:** **no creado**; queda a la espera de que el usuario confirme en el navegador.
 - **Errores:** ninguno.
 - **Estado:** OK
-- **Commit:** pendiente (se registra en el siguiente prompt)
+- **Commit:** `6d98cd8`
+
+---
+
+## Prompt 8d — Cierre de la entrega con tags finales (rama `interfaz-web`)
+
+- **Fecha:** 2026-11-09
+- **Rama de esta entrada:** `interfaz-web`. El mismo prompt se aplica en `main` y en `interfaz-web`, con un commit en cada una.
+- **Prompt literal:**
+
+````text
+Usa la skill cinema-seat-manager. Ya he verificado en el navegador las versiones 1 y 3. Cerramos SIN capturas. NO muevas tags existentes.
+
+1. SEGUIMIENTO.md (ambas ramas): el prompt del 8c llegó truncado. Completa su texto literal con este final exacto y anótalo:
+   "propuesto, deshacer). NO crees tags: te los pediré cuando confirme que todo está bien.
+
+   Enséñame git log --oneline -1 main, git log --oneline -1 interfaz-web y git status -sb."
+   Rellena los Commit del 8c: main 5a2bf1a, rama 6d98cd8. Añade la decisión "las parejas propuestas no se solapan" en la entrada 8c de la rama.
+2. Ambas ramas: elimina del README todas las referencias a docs/capturas/ (la subsección "Verlo sin ejecutar nada" queda solo con los enlaces al código de cada tag y al PR), borra docs/capturas/ con su .gitkeep y quítala del árbol del proyecto.
+3. main: README → versión 1 apunta a v1.1-base y versión 3 a v2.3-web. Entrada 8d en SEGUIMIENTO.md (nota: el último commit de cada rama no puede registrar su propio hash). Verifica diff vacío de src/ package.json tsconfig.json frente a v1.0-base, typecheck y test 20/20. Commit + push: "docs: cerrar entrega con tags finales".
+4. interfaz-web: mismos cambios de README (la sección compartida debe ser idéntica: compruébalo con diff), entrada 8d, typecheck y test 25/25. Commit + push con el mismo mensaje.
+5. Tags anotados sobre esos dos commits y push:
+   v1.1-base "Entrega 1 final: consola (evaluable)" en main
+   v2.3-web "Versión 3 final: web mejorada" en interfaz-web
+6. Termina en main. Enséñame git show-ref --tags -d, git log --oneline -3 main, git log --oneline -3 interfaz-web y git status -sb.
+````
+
+- **Objetivo:** cerrar la entrega sin capturas: completar el registro del 8c, quitar las referencias a `docs/capturas/`, apuntar las versiones 1 y 3 a sus tags finales y etiquetar.
+- **Verificación en navegador:** el usuario confirmó las versiones 1 y 3.
+- **Ficheros modificados:**
+  - `README.md`: "Verlo sin ejecutar nada" queda solo con los enlaces al código de cada tag y al PR (sin tablas de capturas); versión 1 → `v1.1-base`, versión 3 → `v2.3-web` (tabla y enlaces); `docs/capturas/` fuera del árbol del proyecto. La sección "Cómo ver cada versión" es idéntica en las dos ramas (comprobado con `diff`).
+  - `README.md` (aviso inicial: la versión evaluada es `v1.1-base`), `SEGUIMIENTO.md`: final literal del prompt del 8c, hash del 8c (`6d98cd8`), decisión «las parejas propuestas no se solapan» y esta entrada.
+- **Ficheros borrados:** `docs/capturas/.gitkeep` (y con él la carpeta `docs/`).
+- **Sin cambios:** `src/`, `package.json`, `tsconfig.json`. Tags existentes sin mover.
+- **Verificación:** `git diff v2.2-web -- src/cinema.ts src/main.ts` → vacío; `npm run typecheck` → exit 0; `npm run test` → `Pruebas superadas: 25/25`.
+- **Tag:** `v2.3-web` (anotado) sobre el commit de esta entrada.
+- **Nota:** el último commit de cada rama no puede registrar su propio hash (cambiaría al escribirlo). El de este prompt queda en `git log` y en el tag `v2.3-web`.
+- **Errores:** ninguno.
+- **Estado:** OK
+- **Commit:** no registrable (último commit de la rama; ver tag `v2.3-web`)
