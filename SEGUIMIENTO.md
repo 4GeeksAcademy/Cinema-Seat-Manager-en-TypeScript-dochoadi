@@ -14,6 +14,7 @@ Registro cronológico de cada prompt aplicado al repositorio, según el protocol
 | 5 | Auditoría de cumplimiento de criterios (evidencias, prueba de la prueba, riesgos) | OK |
 | 6 | README final y npm audit fix (sin --force) | OK |
 | 6b | Separar entregas (main + v1.0-base / interfaz-web + v2.0-web) | OK |
+| 7 | Interfaz web de taquilla (rama `interfaz-web`, opcional) | OK |
 
 ---
 
@@ -1071,5 +1072,130 @@ Enséñame git log --oneline -2, git tag -n y git status -sb.
 - **`npm run test ; echo "exit: $?"`:** `Pruebas superadas: 20/20` / `exit: 0`.
 - **Checklist anti-objetos:** sin cambios en `src/`; grep → vacío.
 - **Errores:** ninguno.
+- **Estado:** OK
+- **Commit:** pendiente (se registra en el Prompt 8)
+
+---
+
+## Prompt 7 — Interfaz web de taquilla (rama `interfaz-web`, Entrega 2, opcional)
+
+- **Fecha:** 2026-11-09
+- **Rama:** `interfaz-web` (creada desde `main` en `303cef2`). Nada de este prompt se commitea en `main`.
+- **Prompt literal:**
+
+````text
+Usa la skill cinema-seat-manager. Reto extra opcional, NO forma parte de la evaluación (Entrega 2).
+
+0. RAMA: antes de tocar nada, desde main actualizado: git switch -c interfaz-web
+   NUNCA hagas commit, merge ni push en main en este prompt. Todo va a la rama interfaz-web.
+   Las restricciones de CONTEXT.md siguen aplicando: el estado de la sala es SOLO la matriz number[][]; nada de objetos de estado, clases ni frameworks. Solo Tailwind (ya configurado en vite.config.ts).
+
+Usuario objetivo: el PERSONAL DE TAQUILLA (ventanilla y teléfono), no el cliente final. Sin cartel de película, sinopsis, precios, logos ni marcas: nada de material con copyright.
+
+1. Arquitectura
+   - src/web.ts importa las funciones de src/cinema.ts. Prohibido duplicar lógica: toda reserva pasa por reservarAsiento, todo conteo por contarAsientos, toda búsqueda por buscarAsientosContiguos.
+   - Añade liberarAsiento(sala, fila, columna): string a src/cinema.ts con la misma validación, JSDoc y patrón de mensajes: "↩️ Reserva anulada: fila F, asiento C", "⚠️ Asiento ya libre: fila F, asiento C", y el mismo "⚠️ Posición no válida…". No cambies el comportamiento de ninguna función existente.
+   - Añade en src/main.ts un escenario "Anulación de reservas" con comprobaciones de los tres mensajes de liberarAsiento y del conteo. Los 20 checks existentes no se tocan.
+   - Estado de la web: la matriz sala (number[][]), el par resaltado (number[][] | null) y el historial para deshacer como pila number[][] ([[fila, columna], ...]). Nada más.
+   - En web.ts no se usa process ni ninguna API de Node (riesgo de @types/node en EVALUACION.md).
+   - index.html carga /src/web.ts. npm run test y npm run console siguen funcionando igual.
+
+2. Mapa de sala
+   - "Pantalla" arriba, cuadrícula 8x10 con números de fila y columna visibles (mismos índices que la consola).
+   - Cada asiento es un <button> con aria-label "Fila F, asiento C, libre|ocupado|propuesto".
+   - El estado NO se comunica solo con color: libre muestra "L", ocupado "X" (como en la consola), par propuesto con borde grueso. Contraste AA.
+   - Teclado: flechas para moverse entre asientos, Enter/Espacio para reservar, foco visible.
+   - Clic en libre → reservarAsiento → re-render. Clic en ocupado → muestra el mensaje devuelto, sin hacer nada más.
+
+3. Panel de taquilla
+   - Contador en vivo: ocupados / disponibles / % de ocupación (desde contarAsientos).
+   - "Buscar 2 juntos": resalta el par devuelto y pone el foco en él; si es null, muestra el texto de mensajeResultadoContiguos.
+   - "Reservar par": solo activo si hay par resaltado.
+   - Reserva rápida "Fila / Asiento" + botón Reservar (reservas telefónicas).
+   - "Deshacer última reserva": saca la última posición del historial y llama a liberarAsiento.
+   - Registro de operaciones: últimas 10, con hora y el string devuelto.
+
+4. Persistencia
+   - Guarda la matriz en localStorage como JSON tras cada operación y recupérala al cargar, con try/catch. Valida que sea 8x10 de 0/1; si no, sala vacía.
+   - "Nueva sesión" con confirmación: vacía la sala y el historial.
+
+5. Diseño
+   - Responsive: en móvil el panel va debajo del mapa; asientos con área táctil ≥ 40px; scroll horizontal SOLO dentro del mapa si no cabe.
+   - Respeta prefers-color-scheme (claro/oscuro).
+   - Sin espacio muerto: el layout ocupa el alto útil.
+
+6. Verificación y documentación (todo en la rama interfaz-web)
+   - npm run typecheck y npm run test ; echo "exit: $?" en verde (el total de pruebas subirá).
+   - npm run dev y prueba manual: reservar, reservar ocupado, buscar par, reservar par, deshacer, reserva rápida, recargar (persiste), nueva sesión. Indica qué has podido probar tú y qué queda para la prueba manual del usuario.
+   - Checklist anti-objetos sobre src/web.ts.
+   - README.md: actualiza en esta rama las menciones al total de pruebas ("20/20") con el nuevo total, añade liberarAsiento a la tabla de la API y una sección "Interfaz web (opcional)": npm run dev, puerto 5173, pestaña Puertos en Codespaces (puerto en privado), y qué se puede hacer. Indica al principio del README que esta rama es la Entrega 2.
+   - EVALUACION.md: marca la interfaz web y liberarAsiento como "fuera de evaluación / funcionalidad adicional"; actualiza el total de pruebas de esta rama.
+   - SEGUIMIENTO.md: entrada del Prompt 7 (rama interfaz-web), Commit "pendiente (se registra en el Prompt 8)".
+
+7. Cierre:
+   - Un único commit en interfaz-web:
+     feat(web): añadir interfaz de taquilla con HTML y Tailwind
+     (cuerpo: "Prompt 7 (opcional, Entrega 2): mapa de sala accesible, panel de taquilla, deshacer con liberarAsiento, persistencia JSON en localStorage; escenario de anulación en main.ts.")
+   - git push -u origin interfaz-web
+   - Tag anotado: git tag -a v2.0-web -m "Entrega 2: interfaz web de taquilla (opcional)" && git push origin v2.0-web
+   - No crees PR ni release (no hay gh en este entorno; se hacen desde la web de GitHub).
+   - Redacta en tu respuesta un título y una descripción para el Pull Request (resumen, cómo probar, aviso "no evaluable, no fusionar hasta después de la evaluación"), listos para copiar.
+   - Vuelve a main (git switch main) y confirma que main sigue en el commit del Prompt 6b, sin cambios.
+
+Enséñame: git log --oneline -2 interfaz-web, git tag -n, git status -sb y git log --oneline -1 main.
+````
+
+- **Objetivo:** reto opcional (fuera de evaluación): interfaz web para el personal de taquilla que reutiliza `src/cinema.ts`, más `liberarAsiento` para deshacer reservas.
+- **Ficheros creados:** `src/web.ts`.
+- **Ficheros modificados:**
+  - `src/cinema.ts`: nueva `liberarAsiento` (misma validación y patrón de mensajes que `reservarAsiento`). Las funciones existentes no cambian.
+  - `src/main.ts`: escenario 6 "Anulación de reservas" (5 comprobaciones nuevas); los 20 checks existentes no se tocan.
+  - `index.html`: reescrito (sin restos de la plantilla), `lang="es"`, carga `/src/web.ts`.
+  - `README.md`, `EVALUACION.md`, `CONTEXT.md`, `SEGUIMIENTO.md`.
+- **Decisiones:**
+  - **Estado:** solo `sala` (`number[][]`), `parResaltado` (`number[][] | null`) e `historial` (`number[][]`). Los botones se crean una vez y se localizan por id (`asiento-F-C`); el registro de operaciones vive solo en el DOM.
+  - **Sin duplicar lógica:** el éxito de una reserva se detecta comparando `contarAsientos` antes y después de `reservarAsiento`, sin repetir la validación. Clic en ocupado → `reservarAsiento` devuelve `❌ Asiento ocupado…` y no cambia nada.
+  - **Persistencia:** solo se guarda la matriz (como pide el prompt); el historial de deshacer no se guarda, así que tras recargar empieza vacío.
+  - **Reserva rápida** con campos vacíos → `⚠️ Indique fila y asiento.` (si no, `Number("")` sería 0 y se reservaría el asiento 0 sin querer).
+  - **Accesibilidad:** asientos `size-11` (44 px), `L`/`X`/borde grueso además del color, `aria-label` por asiento, `role="status"` con `aria-live` para el último mensaje, foco visible (`outline` de 4 px), flechas para moverse.
+  - **Diseño:** `grid` de 1 columna en móvil (panel debajo) y `[mapa | panel 22rem]` desde `lg`; `min-h-dvh` con el `main` en `flex-1`; `overflow-x-auto` solo en el contenedor del mapa; variantes `dark:` (Tailwind v4 usa `prefers-color-scheme`).
+  - **Nueva sesión** usa `window.confirm`.
+- **`npm run typecheck`:** `tsc --noEmit` → exit 0 (incluye `src/web.ts` con tipos DOM).
+- **`npm run test ; echo "exit: $?"`:** exit 0. Escenario nuevo y resumen:
+
+```text
+=== ESCENARIO 6: Anulación de reservas (funcionalidad adicional, fuera de evaluación) ===
+Reservar fila 3, asiento 4 → ✅ Reserva confirmada: fila 3, asiento 4
+Ocupados: 1 · Disponibles: 79 · Total: 80
+Anular fila 3, asiento 4 → ↩️ Reserva anulada: fila 3, asiento 4
+Anular fila 3, asiento 4 → ⚠️ Asiento ya libre: fila 3, asiento 4
+Anular fila 8, asiento 0 → ⚠️ Posición no válida: fila 8, asiento 0. Valores válidos: fila 0–7, asiento 0–9 (números enteros).
+Ocupados: 0 · Disponibles: 80 · Total: 80
+Comprobaciones:
+  ✔ OK     conteo tras reservar → [1,79]
+  ✔ OK     mensaje de reserva anulada → ↩️ Reserva anulada: fila 3, asiento 4
+  ✔ OK     mensaje de asiento ya libre → ⚠️ Asiento ya libre: fila 3, asiento 4
+  ✔ OK     mensaje de posición no válida al anular → ⚠️ Posición no válida: fila 8, asiento 0. Valores válidos: fila 0–7, asiento 0–9 (números enteros).
+  ✔ OK     conteo tras anular → [0,80]
+
+==========================================
+Pruebas superadas: 25/25
+==========================================
+```
+
+- **Checklist anti-objetos sobre `src/web.ts`:** `grep -nE "\bclass\b|\binterface\b|new Map|new Set|\bthis\b|\bprocess\b" src/web.ts` →
+
+```text
+10: * No usa APIs de Node (`process`, `fs`…): se ejecuta en el navegador.
+```
+
+  Solo aparece el comentario de cabecera que prohíbe `process`. `grep -nE "(=|\(|\[|,|return)\s*\{" src/web.ts` → vacío (sin literales de objeto).
+- **Verificación de la interfaz:**
+  - **Hecho por el asistente (sin navegador en el entorno):**
+    - `vite build` → OK (comprobado que el CSS generado incluye las clases arbitrarias, p. ej. `repeat(10,2.75rem)`); `dist/` borrado después.
+    - `npm run dev` → `VITE v5.4.21 ready`; `GET /` devuelve `<title>Taquilla · Cinema Seat Manager</title>` y carga `/src/web.ts`; `GET /src/style.css` → 200.
+    - Prueba funcional automática en **jsdom** (script en el scratchpad, fuera del repo) sobre el `index.html` y `src/web.ts` reales: reservar, reservar ocupado, flechas, buscar par (foco y `aria-label` "propuesto"), reservar par, deshacer, reserva rápida (válida, fuera de rango, vacía), límite de 10 en el registro, recargar (persiste), JSON inválido / corrupto / valores ≠ 0-1 → sala vacía, nueva sesión (cancelar y confirmar), sala llena → aviso. Resultado: `Interfaz (jsdom): 25/25`. El primer intento dio 24/25 por un fallo **de la prueba** (solo había 9 operaciones y se esperaban 10 en el registro); se corrigió el script, no la interfaz.
+  - **Pendiente de prueba manual del usuario en un navegador real:** aspecto visual y contraste en modo claro y oscuro, foco visible, layout en móvil (panel debajo, scroll horizontal solo en el mapa), tamaño táctil, `Enter`/`Espacio` con teclado real, diálogo de confirmación de "Nueva sesión", y el puerto 5173 en Codespaces.
+- **Errores:** ninguno en el código del proyecto.
 - **Estado:** OK
 - **Commit:** pendiente (se registra en el Prompt 8)

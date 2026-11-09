@@ -49,6 +49,12 @@ mensajeResultadoContiguos(resultado: number[][] | null, sala?: SalaMatriz): stri
 mostrarResultadoContiguos(resultado: number[][] | null, sala?: SalaMatriz): void
 ```
 
+Funcionalidad adicional (Entrega 2, rama `interfaz-web`, fuera de evaluación):
+
+```ts
+liberarAsiento(sala: SalaMatriz, fila: number, columna: number): string // ↩️ anulada / ⚠️ ya libre / ⚠️ no válida
+```
+
 - 💑 con el par encontrado; ⚠️ "Ofrezca asientos separados" si no hay par; ⚠️ "Sala sin asientos: no hay contiguos que buscar." si se pasa una sala sin filas.
 
 ## 4. Decisión de diseño: "primer par" contiguo

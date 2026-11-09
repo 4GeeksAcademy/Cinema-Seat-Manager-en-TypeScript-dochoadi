@@ -1,26 +1,185 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hello World with Typescript</title>
+    <meta name="color-scheme" content="light dark" />
+    <title>Taquilla · Cinema Seat Manager</title>
   </head>
-  <body class="min-h-screen bg-slate-100 text-slate-900">
-    <main class="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center gap-6 p-6">
-      <h1 class="text-4xl font-bold tracking-tight">Hello World with Typescript</h1>
-
-      <section class="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <img
-          src="/rigo-baby.jpg"
-          alt="Hello Rigo"
-          class="h-64 w-full bg-slate-50 object-contain p-2"
-        />
-        <div class="p-5">
-          <h2 class="text-xl font-semibold text-slate-900">Hello Rigo</h2>
-          <p id="app" class="mt-2 text-sm text-slate-600"></p>
+  <body class="min-h-dvh bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <div class="flex min-h-dvh flex-col">
+      <header class="border-b border-slate-300 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
+        <div class="flex flex-wrap items-baseline justify-between gap-2">
+          <h1 class="text-lg font-bold tracking-tight">Taquilla · Sala 8 × 10</h1>
+          <p class="text-sm text-slate-700 dark:text-slate-300">
+            Clic o <kbd class="rounded border border-slate-400 px-1 font-mono text-xs">Enter</kbd> para reservar ·
+            flechas para moverse
+          </p>
         </div>
-      </section>
-    </main>
-    <script type="module" src="/src/main.ts"></script>
+      </header>
+
+      <main class="grid flex-1 grid-cols-1 gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <!-- Mapa de sala -->
+        <section
+          aria-labelledby="titulo-mapa"
+          class="flex min-w-0 flex-col rounded-xl border border-slate-300 bg-white p-4 dark:border-slate-700 dark:bg-slate-900"
+        >
+          <h2 id="titulo-mapa" class="sr-only">Mapa de sala</h2>
+          <div class="flex flex-1 flex-col justify-center overflow-x-auto">
+            <div class="mx-auto w-max">
+              <div
+                aria-hidden="true"
+                class="mb-6 ml-10 rounded-b-3xl border-t-4 border-slate-500 pt-1 text-center text-xs font-semibold tracking-[0.4em] text-slate-700 uppercase dark:border-slate-400 dark:text-slate-300"
+              >
+                Pantalla
+              </div>
+              <div id="mapa" role="group" aria-label="Asientos de la sala" class="grid gap-1.5"></div>
+              <ul
+                aria-hidden="true"
+                class="mt-5 ml-10 flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-700 dark:text-slate-300"
+              >
+                <li class="flex items-center gap-2">
+                  <span class="grid size-6 place-items-center rounded border border-slate-500 bg-white font-mono text-xs font-bold text-slate-900 dark:bg-slate-800 dark:text-slate-100">L</span>
+                  Libre
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="grid size-6 place-items-center rounded bg-slate-800 font-mono text-xs font-bold text-white dark:bg-slate-200 dark:text-slate-900">X</span>
+                  Ocupado
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="grid size-6 place-items-center rounded border-4 border-amber-600 bg-amber-100 font-mono text-xs font-bold text-slate-900 dark:border-amber-400 dark:bg-amber-950 dark:text-amber-50">L</span>
+                  Propuesto (borde grueso)
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- Panel de taquilla -->
+        <aside
+          aria-label="Panel de taquilla"
+          class="flex flex-col gap-4 rounded-xl border border-slate-300 bg-white p-4 dark:border-slate-700 dark:bg-slate-900"
+        >
+          <!-- Contador -->
+          <section aria-labelledby="titulo-ocupacion">
+            <h2 id="titulo-ocupacion" class="text-sm font-semibold text-slate-700 uppercase dark:text-slate-300">Ocupación</h2>
+            <dl class="mt-2 grid grid-cols-3 gap-2 text-center">
+              <div class="rounded-lg bg-slate-100 p-2 dark:bg-slate-800">
+                <dt class="text-xs text-slate-700 dark:text-slate-300">Ocupados</dt>
+                <dd id="contador-ocupados" class="text-2xl font-bold tabular-nums">0</dd>
+              </div>
+              <div class="rounded-lg bg-slate-100 p-2 dark:bg-slate-800">
+                <dt class="text-xs text-slate-700 dark:text-slate-300">Disponibles</dt>
+                <dd id="contador-disponibles" class="text-2xl font-bold tabular-nums">80</dd>
+              </div>
+              <div class="rounded-lg bg-slate-100 p-2 dark:bg-slate-800">
+                <dt class="text-xs text-slate-700 dark:text-slate-300">Ocupación</dt>
+                <dd id="contador-porcentaje" class="text-2xl font-bold tabular-nums">0 %</dd>
+              </div>
+            </dl>
+            <div class="mt-2 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700" aria-hidden="true">
+              <div id="barra-ocupacion" class="h-full w-0 bg-sky-700 transition-[width] dark:bg-sky-400"></div>
+            </div>
+          </section>
+
+          <!-- Último mensaje -->
+          <p
+            id="mensaje"
+            role="status"
+            aria-live="polite"
+            class="min-h-12 rounded-lg border border-slate-300 bg-slate-50 p-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+          >
+            Seleccione un asiento para reservarlo.
+          </p>
+
+          <!-- Pareja -->
+          <section aria-labelledby="titulo-pareja" class="flex flex-col gap-2">
+            <h2 id="titulo-pareja" class="text-sm font-semibold text-slate-700 uppercase dark:text-slate-300">Pareja</h2>
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                id="boton-buscar-par"
+                type="button"
+                class="min-h-10 rounded-lg bg-sky-700 px-3 py-2 font-semibold text-white hover:bg-sky-800 focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-sky-600 dark:bg-sky-400 dark:text-slate-950 dark:hover:bg-sky-300"
+              >
+                Buscar 2 juntos
+              </button>
+              <button
+                id="boton-reservar-par"
+                type="button"
+                disabled
+                class="min-h-10 rounded-lg border-2 border-sky-700 px-3 py-2 font-semibold text-sky-800 hover:bg-sky-50 focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-sky-600 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-500 disabled:hover:bg-transparent dark:border-sky-400 dark:text-sky-300 dark:hover:bg-slate-800 dark:disabled:border-slate-700 dark:disabled:text-slate-500"
+              >
+                Reservar par
+              </button>
+            </div>
+          </section>
+
+          <!-- Reserva rápida -->
+          <section aria-labelledby="titulo-rapida">
+            <h2 id="titulo-rapida" class="text-sm font-semibold text-slate-700 uppercase dark:text-slate-300">
+              Reserva rápida (teléfono)
+            </h2>
+            <form id="formulario-rapido" class="mt-2 flex items-end gap-2" novalidate>
+              <label class="flex flex-1 flex-col text-xs text-slate-700 dark:text-slate-300">
+                Fila (0–7)
+                <input
+                  id="campo-fila"
+                  type="number"
+                  min="0"
+                  max="7"
+                  inputmode="numeric"
+                  class="mt-1 min-h-10 w-full rounded-lg border border-slate-400 bg-white px-2 text-base text-slate-900 focus-visible:outline-4 focus-visible:outline-offset-1 focus-visible:outline-sky-600 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
+                />
+              </label>
+              <label class="flex flex-1 flex-col text-xs text-slate-700 dark:text-slate-300">
+                Asiento (0–9)
+                <input
+                  id="campo-asiento"
+                  type="number"
+                  min="0"
+                  max="9"
+                  inputmode="numeric"
+                  class="mt-1 min-h-10 w-full rounded-lg border border-slate-400 bg-white px-2 text-base text-slate-900 focus-visible:outline-4 focus-visible:outline-offset-1 focus-visible:outline-sky-600 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
+                />
+              </label>
+              <button
+                type="submit"
+                class="min-h-10 rounded-lg bg-slate-800 px-4 font-semibold text-white hover:bg-slate-700 focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-sky-600 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-white"
+              >
+                Reservar
+              </button>
+            </form>
+          </section>
+
+          <!-- Deshacer / nueva sesión -->
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              id="boton-deshacer"
+              type="button"
+              disabled
+              class="min-h-10 rounded-lg border border-slate-400 px-3 py-2 text-sm font-semibold hover:bg-slate-100 focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-sky-600 disabled:cursor-not-allowed disabled:text-slate-500 disabled:hover:bg-transparent dark:border-slate-500 dark:hover:bg-slate-800"
+            >
+              Deshacer última reserva
+            </button>
+            <button
+              id="boton-nueva-sesion"
+              type="button"
+              class="min-h-10 rounded-lg border border-red-700 px-3 py-2 text-sm font-semibold text-red-800 hover:bg-red-50 focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-sky-600 dark:border-red-400 dark:text-red-300 dark:hover:bg-red-950"
+            >
+              Nueva sesión
+            </button>
+          </div>
+
+          <!-- Registro -->
+          <section aria-labelledby="titulo-registro" class="flex min-h-0 flex-1 flex-col">
+            <h2 id="titulo-registro" class="text-sm font-semibold text-slate-700 uppercase dark:text-slate-300">
+              Registro (últimas 10)
+            </h2>
+            <ol id="registro" class="mt-2 flex flex-col gap-1 overflow-y-auto font-mono text-xs"></ol>
+          </section>
+        </aside>
+      </main>
+    </div>
+    <script type="module" src="/src/web.ts"></script>
   </body>
 </html>

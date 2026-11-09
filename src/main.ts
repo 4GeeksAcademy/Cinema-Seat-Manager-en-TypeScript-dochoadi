@@ -16,6 +16,7 @@ import {
   buscarAsientosContiguos,
   contarAsientos,
   crearSala,
+  liberarAsiento,
   mensajeResultadoContiguos,
   mostrarResultadoContiguos,
   mostrarSala,
@@ -253,6 +254,31 @@ const siguientePar = buscarYMostrarContiguos(salaTaquilla);
 console.log("Comprobaciones:");
 verificar("conteo tras reservar la pareja", JSON.stringify(conteoTaquilla), JSON.stringify([2, 78]));
 verificar("siguiente par contiguo", JSON.stringify(siguientePar), JSON.stringify([[0, 2], [0, 3]]));
+
+// ---------------------------------------------------------------------------
+// ESCENARIO 6: anulación de reservas (Entrega 2, funcionalidad adicional)
+// ---------------------------------------------------------------------------
+encabezado("6", "Anulación de reservas (funcionalidad adicional, fuera de evaluación)");
+const salaAnulaciones = crearSala(FILAS, COLUMNAS);
+intentarReserva(salaAnulaciones, 3, 4);
+const conteoTrasReservar = mostrarConteo(salaAnulaciones);
+const mensajeAnulada = liberarAsiento(salaAnulaciones, 3, 4);
+console.log(`Anular fila 3, asiento 4 → ${mensajeAnulada}`);
+const mensajeYaLibre = liberarAsiento(salaAnulaciones, 3, 4);
+console.log(`Anular fila 3, asiento 4 → ${mensajeYaLibre}`);
+const mensajeAnulacionNoValida = liberarAsiento(salaAnulaciones, 8, 0);
+console.log(`Anular fila 8, asiento 0 → ${mensajeAnulacionNoValida}`);
+const conteoTrasAnular = mostrarConteo(salaAnulaciones);
+console.log("Comprobaciones:");
+verificar("conteo tras reservar", JSON.stringify(conteoTrasReservar), JSON.stringify([1, 79]));
+verificar("mensaje de reserva anulada", mensajeAnulada, "↩️ Reserva anulada: fila 3, asiento 4");
+verificar("mensaje de asiento ya libre", mensajeYaLibre, "⚠️ Asiento ya libre: fila 3, asiento 4");
+verificar(
+  "mensaje de posición no válida al anular",
+  mensajeAnulacionNoValida,
+  "⚠️ Posición no válida: fila 8, asiento 0. Valores válidos: fila 0–7, asiento 0–9 (números enteros).",
+);
+verificar("conteo tras anular", JSON.stringify(conteoTrasAnular), JSON.stringify([0, 80]));
 
 // ---------------------------------------------------------------------------
 // ESCENARIO EXTRA: robustez con una matriz sin filas

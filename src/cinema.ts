@@ -142,6 +142,43 @@ export function reservarAsiento(sala: SalaMatriz, fila: number, columna: number)
 }
 
 /**
+ * Anula la reserva de un asiento concreto (lo deja libre).
+ *
+ * Funcionalidad adicional de la Entrega 2 (interfaz web, fuera de
+ * evaluación). Valida igual que `reservarAsiento`: si la sala está vacía
+ * devuelve un aviso; después comprueba que fila y columna sean enteros
+ * dentro de rango y que el asiento esté ocupado. Si todo es correcto, marca
+ * el asiento como libre (0) modificando la matriz recibida.
+ *
+ * @param sala - Matriz de asientos (se modifica si la anulación tiene éxito).
+ * @param fila - Índice de fila (base 0).
+ * @param columna - Índice de columna / número de asiento (base 0).
+ * @returns Mensaje legible para taquilla con el resultado de la operación.
+ */
+export function liberarAsiento(sala: SalaMatriz, fila: number, columna: number): string {
+  if (sala.length === 0) {
+    return "⚠️ Sala sin asientos: no se puede anular.";
+  }
+  const totalFilas = sala.length;
+  const totalColumnas = sala[0].length;
+
+  const filaValida = Number.isInteger(fila) && fila >= 0 && fila < totalFilas;
+  const columnaValida = Number.isInteger(columna) && columna >= 0 && columna < totalColumnas;
+
+  if (!filaValida || !columnaValida) {
+    return (
+      `⚠️ Posición no válida: fila ${fila}, asiento ${columna}. ` +
+      `Valores válidos: fila 0–${totalFilas - 1}, asiento 0–${totalColumnas - 1} (números enteros).`
+    );
+  } else if (sala[fila][columna] === LIBRE) {
+    return `⚠️ Asiento ya libre: fila ${fila}, asiento ${columna}`;
+  } else {
+    sala[fila][columna] = LIBRE;
+    return `↩️ Reserva anulada: fila ${fila}, asiento ${columna}`;
+  }
+}
+
+/**
  * Cuenta los asientos ocupados y disponibles de la sala.
  *
  * Recorre la matriz completa con dos bucles `for` anidados.

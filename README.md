@@ -2,11 +2,13 @@
 
 Prototipo de línea de comandos para que el **personal de taquilla** de un cine independiente gestione las reservas de una **sala de 8 filas x 10 asientos**: ver la sala, reservar, contar ocupación y encontrar dos asientos juntos para una pareja.
 
+> **Estás en la rama `interfaz-web` (Entrega 2, opcional, fuera de evaluación).** Incluye todo lo de la Entrega 1 más una interfaz web de taquilla y la función `liberarAsiento`. La versión evaluada es la rama `main` (tag `v1.0-base`).
+
 ## Verificar en 30 segundos
 
 ```bash
 npm install
-npm run test        # debe terminar con "Pruebas superadas: 20/20" (exit 0)
+npm run test        # en esta rama: "Pruebas superadas: 25/25" (exit 0); en main: 20/20
 npm run typecheck   # tsc --noEmit, sin errores
 ```
 
@@ -67,6 +69,7 @@ Ocupados: 31 · Disponibles: 49 · Total: 80
 | `reservarAsiento(sala: SalaMatriz, fila: number, columna: number): string` | Valida la posición y la disponibilidad; si está libre, marca `1`. | Mensaje para taquilla (✅ / ❌ / ⚠️). |
 | `contarAsientos(sala: SalaMatriz): [number, number]` | Recorre la matriz y cuenta asientos. | Tupla `[ocupados, disponibles]`. |
 | `buscarAsientosContiguos(sala: SalaMatriz): number[][] \| null` | Busca el primer par de asientos libres juntos en la misma fila (`while` con parada en el primer par). | `[[f, c], [f, c + 1]]` o `null`. |
+| `liberarAsiento(sala: SalaMatriz, fila: number, columna: number): string` | *Funcionalidad adicional (Entrega 2).* Anula una reserva con la misma validación que `reservarAsiento`; si está ocupado, marca `0`. | `↩️ Reserva anulada…` / `⚠️ Asiento ya libre…` / `⚠️ Posición no válida…`. |
 | `mensajeResultadoContiguos(resultado: number[][] \| null, sala?: SalaMatriz): string` | Construye el texto del resultado de la búsqueda. | 💑 con el par, ⚠️ "Ofrezca asientos separados" o ⚠️ "Sala sin asientos". |
 | `mostrarResultadoContiguos(resultado: number[][] \| null, sala?: SalaMatriz): void` | Imprime el mensaje anterior. | Nada (escribe en consola). |
 
@@ -89,9 +92,33 @@ Cada comprobación imprime `✔ OK` o `✘ FALLO`; si alguna falla, el proceso t
 3. **Casi llena, solo asientos sueltos:** `[74, 6]`, sin par (`null`); se vende un suelto → `[75, 5]`.
 4. **Llena:** `[80, 0]`, sin par; la reserva falla con "Asiento ocupado".
 5. **Flujo de taquilla:** una pareja pide dos juntos → `[[0,0],[0,1]]` → se reservan → `[2, 78]` → siguiente par `[[0,2],[0,3]]`.
-6. **Extra (robustez):** matriz sin filas → `null` y "Sala sin asientos: no hay contiguos que buscar."
+6. **Anulación de reservas** *(Entrega 2, fuera de evaluación)*: reservar (3,4) → `[1, 79]`; anular → `↩️ Reserva anulada`; anular otra vez → `⚠️ Asiento ya libre`; fila 8 → `⚠️ Posición no válida`; `[0, 80]`.
+7. **Extra (robustez):** matriz sin filas → `null` y "Sala sin asientos: no hay contiguos que buscar."
 
 El cumplimiento de cada criterio de evaluación, con su evidencia, está en [EVALUACION.md](EVALUACION.md).
+
+## Interfaz web (opcional)
+
+Pantalla de taquilla (ventanilla y teléfono) que reutiliza `src/cinema.ts`: toda reserva pasa por `reservarAsiento`, todo conteo por `contarAsientos` y toda búsqueda por `buscarAsientosContiguos`.
+
+```bash
+npm install
+npm run dev         # Vite en el puerto 5173
+```
+
+- **Local:** abre `http://localhost:5173`.
+- **Codespaces:** pestaña **Puertos** → puerto **5173** → abrir en el navegador. Deja el puerto en **privado** (visibilidad por defecto).
+
+Qué se puede hacer:
+
+- **Mapa de sala** con la pantalla arriba y los mismos índices que la consola. Cada asiento es un botón: `L` libre, `X` ocupado, borde grueso para el par propuesto (el estado no depende solo del color). Clic, `Enter` o `Espacio` para reservar; flechas para moverse.
+- **Contador en vivo:** ocupados, disponibles y % de ocupación.
+- **Buscar 2 juntos** (resalta el par y le pone el foco) y **Reservar par**.
+- **Reserva rápida** por fila y asiento, para reservas telefónicas.
+- **Deshacer última reserva** (usa `liberarAsiento`) y **Nueva sesión** (con confirmación).
+- **Registro** de las últimas 10 operaciones con la hora y el mensaje devuelto.
+- La sala se guarda en `localStorage` como JSON y se recupera al recargar (si el dato no es una sala 8x10 de 0/1, se empieza con la sala vacía). El historial de deshacer no se guarda: al recargar empieza vacío.
+- Responsive (en móvil el panel va debajo del mapa) y modo claro / oscuro según el sistema.
 
 ## Estructura del proyecto
 
@@ -102,16 +129,17 @@ El cumplimiento de cada criterio de evaluación, con su evidencia, está en [EVA
 ├── src/
 │   ├── cinema.ts        # lógica: matriz y funciones
 │   ├── main.ts          # guion de pruebas por consola
-│   ├── style.css        # reto web opcional
-│   └── vite-env.d.ts    # reto web opcional
+│   ├── web.ts           # interfaz web de taquilla (Entrega 2)
+│   ├── style.css        # estilos (Tailwind) de la interfaz web
+│   └── vite-env.d.ts    # tipos de Vite
 ├── CLAUDE.md
 ├── CONTEXT.md           # problema, restricciones y contratos
 ├── ERRORES.md           # errores y su resolución
 ├── EVALUACION.md        # criterios de evaluación con evidencias
 ├── SEGUIMIENTO.md       # registro de cada prompt
 ├── README.md
-├── index.html           # reto web opcional
-├── vite.config.ts       # reto web opcional
+├── index.html           # página de la interfaz web (carga src/web.ts)
+├── vite.config.ts       # Vite + Tailwind (puerto 5173)
 ├── learn.json
 ├── package.json
 └── tsconfig.json
