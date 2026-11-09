@@ -10,6 +10,19 @@ npm run test        # debe terminar con "Pruebas superadas: 20/20" (exit 0)
 npm run typecheck   # tsc --noEmit, sin errores
 ```
 
+## Entregas
+
+| Entrega | Qué incluye | Dónde está | Cómo ejecutarla |
+|---------|-------------|------------|-----------------|
+| **1 · Base (evaluable)** | Gestor de asientos por consola: matriz 8x10, reservas con validación, conteo, búsqueda de contiguos y 5 escenarios de prueba. | Rama `main`, tag `v1.0-base`. | `npm install` → `npm run test` |
+| **2 · Interfaz web (opcional, fuera de evaluación)** | Mapa de sala clicable para taquilla con HTML + Tailwind, reutilizando `src/cinema.ts`. | Rama `interfaz-web`, tag `v2.0-web`, Pull Request abierto hacia `main`. | `git fetch && git switch interfaz-web` → `npm install` → `npm run dev` → pestaña **Puertos**, puerto **5173** (privado) |
+
+- Enlaces: [rama `interfaz-web`](../../tree/interfaz-web) · [cambios respecto a `main`](../../compare/main...interfaz-web) · [releases](../../releases)
+- **En Codespaces:** botón **Code** → **Codespaces** → elige la rama (`main` o `interfaz-web`) **antes** de crear el codespace.
+- La Entrega 2 parte de la Entrega 1 y **no modifica su comportamiento**.
+
+> `main` es la versión evaluada. La rama `interfaz-web` añade además `liberarAsiento` y su escenario de prueba, por eso su total de pruebas es mayor.
+
 ## Cómo ejecutarlo
 
 - **GitHub Codespaces:** abre el repositorio en un Codespace. El devcontainer (Node 20) ejecuta `npm install` automáticamente; después, `npm run test`.

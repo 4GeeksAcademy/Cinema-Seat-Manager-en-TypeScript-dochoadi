@@ -1,5 +1,7 @@
 # EVALUACIÓN — Trazabilidad de criterios
 
+Este documento evalúa la Entrega 1 (rama main, tag v1.0-base).
+
 Auditoría realizada en el **Prompt 5** desde el punto de vista de un evaluador estricto. Cada fila indica cómo se cumple, dónde (`fichero:función`) y la evidencia (comando + fragmento de salida). Ningún ✅ sin evidencia.
 
 Estados posibles: `⏳ Pendiente` · `🟡 Parcial` · `❌ No cumple` · `✅ Cumplido`.

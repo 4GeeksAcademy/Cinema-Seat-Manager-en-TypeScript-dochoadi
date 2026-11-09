@@ -13,6 +13,7 @@ Registro cronológico de cada prompt aplicado al repositorio, según el protocol
 | 4 | Guion de pruebas (5 escenarios + robustez) y corrección de mensajes de reserva | OK |
 | 5 | Auditoría de cumplimiento de criterios (evidencias, prueba de la prueba, riesgos) | OK |
 | 6 | README final y npm audit fix (sin --force) | OK |
+| 6b | Separar entregas (main + v1.0-base / interfaz-web + v2.0-web) | OK |
 
 ---
 
@@ -1010,4 +1011,65 @@ Will install vite@8.3.7, which is a breaking change
 - **Checklist anti-objetos:** sin cambios en `src/`; `grep -nE "\bclass\b|\binterface\b|new Map|new Set" src/` → vacío.
 - **Errores:** ninguno.
 - **Estado:** OK
-- **Commit:** pendiente (se registra en el Prompt 7)
+- **Commit:** `f5d3739`
+
+---
+
+## Prompt 6b — Separar entregas
+
+- **Fecha:** 2026-11-09
+- **Prompt literal:**
+
+````text
+Usa la skill cinema-seat-manager. Trabaja en main.
+
+Vamos a separar el proyecto en dos entregas para que los instructores puedan revisar ambas:
+- Entrega 1 (evaluable): rama main + tag v1.0-base. CLI en TypeScript, Prompts 1–6.
+- Entrega 2 (opcional, no evaluable): rama interfaz-web + tag v2.0-web + Pull Request hacia main SIN fusionar. Interfaz web (Prompt 7).
+
+1. SEGUIMIENTO.md: rellena el Commit del Prompt 6 con f5d3739.
+
+2. README.md: añade, justo después de "Verificar en 30 segundos", una sección "Entregas" con:
+   - Una tabla: Entrega | Qué incluye | Dónde está | Cómo ejecutarla.
+     * 1 · Base (evaluable): gestor de asientos por consola; matriz 8x10, reservas con validación, conteo, búsqueda de contiguos, 5 escenarios de prueba. Dónde: rama main, tag v1.0-base. Cómo: npm install → npm run test.
+     * 2 · Interfaz web (opcional, fuera de evaluación): mapa de sala clicable para taquilla con HTML + Tailwind, reutilizando src/cinema.ts. Dónde: rama interfaz-web, tag v2.0-web, Pull Request abierto hacia main. Cómo: git fetch && git switch interfaz-web → npm install → npm run dev → pestaña Puertos, puerto 5173 (privado).
+   - Enlaces relativos al repo: la rama (../../tree/interfaz-web), la comparación de cambios (../../compare/main...interfaz-web) y las releases (../../releases).
+   - Cómo abrir cada entrega en Codespaces: botón Code → Codespaces → elegir la rama (main o interfaz-web) antes de crear el codespace.
+   - Una nota: "main es la versión evaluada. La rama interfaz-web añade además liberarAsiento y su escenario de prueba, por eso su total de pruebas es mayor."
+   - Aclara que la Entrega 2 parte de la Entrega 1 y no modifica su comportamiento.
+
+3. EVALUACION.md: añade una línea al inicio: "Este documento evalúa la Entrega 1 (rama main, tag v1.0-base)."
+
+4. SEGUIMIENTO.md: entrada del Prompt 6b, Commit "pendiente (se registra en el Prompt 8)".
+
+5. npm run typecheck y npm run test ; echo "exit: $?" en verde (20/20).
+
+6. Commit + push en main:
+   docs: describir entregas separadas en el README
+   (cuerpo: "Prompt 6b: Entrega 1 evaluable en main (tag v1.0-base) y Entrega 2 web opcional en rama interfaz-web (tag v2.0-web, PR sin fusionar).")
+
+7. Crea y sube el tag anotado sobre ese commit:
+   git tag -a v1.0-base -m "Entrega 1: gestor de asientos por consola (evaluable)"
+   git push origin v1.0-base
+
+8. Crea la release con gh (si gh no tiene permisos, dímelo y no insistas; el tag basta):
+   gh release create v1.0-base --title "Entrega 1 · Base evaluable (CLI)" --notes "Gestor de asientos por consola en TypeScript. Verificación: npm install && npm run test → Pruebas superadas: 20/20. Criterios: ver EVALUACION.md."
+
+Enséñame git log --oneline -2, git tag -n y git status -sb.
+````
+
+- **Objetivo:** separar el proyecto en dos entregas revisables: Entrega 1 evaluable (`main`, tag `v1.0-base`) y Entrega 2 web opcional (rama `interfaz-web`, tag `v2.0-web`, PR sin fusionar, Prompt 7).
+- **Ficheros modificados:**
+  - `README.md`: sección "Entregas" tras "Verificar en 30 segundos" (tabla, enlaces relativos a la rama / comparación / releases, Codespaces por rama, nota sobre `liberarAsiento` y el total de pruebas).
+  - `EVALUACION.md`: línea inicial "Este documento evalúa la Entrega 1 (rama main, tag v1.0-base)."
+  - `SEGUIMIENTO.md`: hash del Prompt 6 y esta entrada.
+- **Ficheros creados:** ninguno.
+- **Nota:** los enlaces a `interfaz-web` (rama y comparación) devuelven 404 hasta que la rama exista (Prompt 7). Se mantienen a propósito.
+- **Tag:** `v1.0-base` (anotado) sobre el commit de este prompt, subido a `origin`.
+- **Release:** no creada desde este entorno: `gh` no está instalado (`command -v gh` → sin resultado). El tag `v1.0-base` fija la entrega; la release puede crearse desde la web de GitHub si la cuenta tiene permisos en la organización.
+- **`npm run typecheck`:** `tsc --noEmit` → exit 0.
+- **`npm run test ; echo "exit: $?"`:** `Pruebas superadas: 20/20` / `exit: 0`.
+- **Checklist anti-objetos:** sin cambios en `src/`; grep → vacío.
+- **Errores:** ninguno.
+- **Estado:** OK
+- **Commit:** pendiente (se registra en el Prompt 8)
