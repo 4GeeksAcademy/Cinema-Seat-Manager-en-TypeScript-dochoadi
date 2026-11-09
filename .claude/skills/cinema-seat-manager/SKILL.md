@@ -33,7 +33,7 @@ Fuente de verdad: [CONTEXT.md](../../../CONTEXT.md). Resumen:
    - ficheros creados / modificados / borrados;
    - resultado de `npm run typecheck` y `npm run test`;
    - estado (`OK` / `KO`);
-   - commit (hash corto; si el hash del propio commit no puede incluirse en él, se registra en un commit posterior `docs: registrar hashes de commit en SEGUIMIENTO`).
+   - commit (hash corto). El hash del commit del prompt N se escribe durante el prompt N+1; mientras tanto el campo queda como "pendiente (se registra en el Prompt N+1)".
    - Actualizar también la tabla resumen.
 2. **ERRORES.md** — cada error (compilación, ejecución, resultado incorrecto, desviación de restricción) se registra con:
    - ID (`ERR-001`, `ERR-002`, …);
@@ -44,6 +44,7 @@ Fuente de verdad: [CONTEXT.md](../../../CONTEXT.md). Resumen:
    - verificación.
 3. **EVALUACION.md** — si el cambio afecta a un criterio de evaluación o requisito funcional, actualizar su fila (cómo se cumple, dónde, evidencia, estado).
 4. **Commit + push** — Cerrar cada prompt con un commit descriptivo (Conventional Commits, en español) cuyo cuerpo indique 'Prompt N' y resuma los cambios, seguido de git push a la rama actual. Solo si npm run typecheck y npm run test están en verde; si fallan, registrar en ERRORES.md y no hacer commit.
+   - **Registro de hashes:** no se hace un commit aparte para registrar hashes. El hash del commit del prompt N se escribe en SEGUIMIENTO.md durante el prompt N+1 y viaja en su commit. El Prompt 8 registra el hash del último.
 
 ## Checklist anti-objetos (antes de cerrar cualquier tarea)
 

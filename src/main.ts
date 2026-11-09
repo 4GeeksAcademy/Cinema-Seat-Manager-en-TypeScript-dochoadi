@@ -1,12 +1,22 @@
-if (typeof document !== "undefined") {
-  import("./style.css").then(() => {
-    const app = document.querySelector<HTMLParagraphElement>("#app");
-    if (app) {
-      app.textContent = "If you can see this, Tailwind is working.";
-    }
-  });
-}
+/**
+ * Demo mínima temporal (Prompt 2). Se sustituirá por los escenarios de
+ * prueba completos en prompts posteriores.
+ */
+import { COLUMNAS, FILAS, contarAsientos, crearSala, mostrarSala, reservarAsiento } from "./cinema";
 
-console.log("Hello from src/main.ts");
+const sala = crearSala(FILAS, COLUMNAS);
 
-export {};
+console.log("=== Sala recién creada ===");
+mostrarSala(sala);
+
+console.log("=== Reservas ===");
+console.log(reservarAsiento(sala, 2, 3));
+console.log(reservarAsiento(sala, 2, 3));
+console.log(reservarAsiento(sala, 9, 0));
+
+console.log("");
+console.log("=== Sala tras las reservas ===");
+mostrarSala(sala);
+
+const [ocupados, disponibles] = contarAsientos(sala);
+console.log(`Ocupados: ${ocupados} · Disponibles: ${disponibles} · Total: ${ocupados + disponibles}`);

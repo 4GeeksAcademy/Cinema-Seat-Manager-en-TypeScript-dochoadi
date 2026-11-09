@@ -8,6 +8,7 @@ Registro cronológico de cada prompt aplicado al repositorio, según el protocol
 |----|----------|--------|
 | 1 | Limpieza de plantilla, contexto, skill y esqueleto de documentación | OK |
 | 1b | Regla de commit por prompt y sincronización de package-lock.json | OK |
+| 2 | Funcionalidad principal: crearSala, mostrarSala, reservarAsiento, contarAsientos | OK |
 
 ---
 
@@ -123,4 +124,103 @@ Termina ejecutando `npm run typecheck` y enseñándome el árbol de ficheros res
 - **Checklist anti-objetos:** `grep -nE "\bclass\b|\binterface\b|new Map|new Set" src/` → vacío.
 - **Errores:** ninguno.
 - **Estado:** OK
-- **Commit:** `12efeaf`
+- **Commit:** `12efeaf` (+ `cac1ac2` `docs: registrar hashes de commit en SEGUIMIENTO`, último commit con hashes aparte; a partir del Prompt 2 ya no se usa ese esquema)
+
+---
+
+## Prompt 2 — Funcionalidad principal
+
+- **Fecha:** 2026-11-09
+- **Prompt literal:**
+
+````text
+Usa la skill cinema-seat-manager y sigue CONTEXT.md.
+
+Crea src/cinema.ts con estas funciones exportadas (sin clases, sin interfaces, sin objetos):
+
+1. crearSala(filas, columnas): SalaMatriz — matriz rellena de 0 con bucles for anidados (no uses Array.from con callbacks; queremos el bucle explícito para el criterio 4).
+2. mostrarSala(sala): void — imprime:
+   - cabecera con números de columna alineados,
+   - cada fila con su número a la izquierda,
+   - "L" para 0 y "X" para 1,
+   - una leyenda final "L = libre · X = ocupado" y una línea indicando que la pantalla está arriba.
+   Formato monoespaciado, que se lea bien en una terminal de taquilla.
+3. reservarAsiento(sala, fila, columna): string
+   - if/else en este orden: fila/columna no enteras o fuera de rango → mensaje de error con el rango válido; asiento ocupado → "❌ El asiento (f, c) ya está ocupado"; si no, marcar 1 y "✅ Reserva confirmada: fila f, asiento c".
+4. contarAsientos(sala): [number, number] — [ocupados, disponibles], recorriendo con bucles.
+5. Exporta también el alias `export type SalaMatriz = number[][]` y las constantes FILAS = 8, COLUMNAS = 10.
+
+JSDoc en español en cada función. Nombres en español, significativos.
+
+En src/main.ts deja temporalmente una demo mínima: crear sala, mostrarla, reservar (2,3), reintentar (2,3), reservar fuera de rango (9,0), mostrar conteo con un mensaje legible ("Ocupados: X · Disponibles: Y · Total: 80").
+
+Elimina de src/main.ts todo el código de la plantilla (import de style.css / document). main.ts debe correr en Node con tsx.
+
+Ejecuta npm run typecheck y npm run test, pega la salida, y documenta según el protocolo (SEGUIMIENTO, ERRORES si los hay, EVALUACION criterios 1–4, 6 y requisitos principales). El criterio 4 debe quedar como "Parcial": aún no hay while (llega en el Prompt 3).
+
+Ajuste de protocolo (aplícalo en este mismo prompt):
+- Modifica el paso "Commit + push" de .claude/skills/cinema-seat-manager/SKILL.md: ya no se hace un commit aparte para registrar hashes. El hash del commit del prompt N se escribe en SEGUIMIENTO.md durante el prompt N+1 y viaja en su commit. El Prompt 8 registra el hash del último.
+- En este Prompt 2, el campo Commit de su propia entrada queda como "pendiente (se registra en el Prompt 3)".
+
+Cierra con un único commit + push según el protocolo. Mensaje sugerido:
+feat: implementar matriz de sala, reserva con validación y conteo
+(cuerpo: "Prompt 2: crearSala, mostrarSala, reservarAsiento, contarAsientos en src/cinema.ts; demo mínima en main.ts; ajuste del protocolo de registro de hashes.")
+Enséñame al final `git log --oneline -2` y `git status -sb`.
+````
+
+- **Objetivo:** implementar la funcionalidad principal (matriz de sala, visualización, reserva validada y conteo), sustituir la demo de la plantilla en `main.ts` y ajustar el protocolo de registro de hashes.
+- **Ficheros creados:** `src/cinema.ts` (`SalaMatriz`, `FILAS`, `COLUMNAS`, `crearSala`, `mostrarSala`, `reservarAsiento`, `contarAsientos`).
+- **Ficheros modificados:** `src/main.ts` (demo mínima, sin código de plantilla), `.claude/skills/cinema-seat-manager/SKILL.md` (registro de hashes en el prompt N+1), `SEGUIMIENTO.md`, `EVALUACION.md`.
+- **Decisiones:**
+  - `reservarAsiento` y `mostrarSala` calculan el rango a partir de `sala.length` / `sala[0].length`, no de las constantes, para que funcionen con cualquier matriz recibida.
+  - El import en `main.ts` es `"./cinema"` (sin extensión), compatible con `moduleResolution: "Bundler"` y con `tsx`.
+- **`npm run typecheck`:** `tsc --noEmit` → sin errores (exit 0).
+- **`npm run test`:** exit 0. Salida:
+
+```text
+=== Sala recién creada ===
+
+        ══════════ PANTALLA ══════════
+
+          0  1  2  3  4  5  6  7  8  9
+Fila 0 │  L  L  L  L  L  L  L  L  L  L
+Fila 1 │  L  L  L  L  L  L  L  L  L  L
+Fila 2 │  L  L  L  L  L  L  L  L  L  L
+Fila 3 │  L  L  L  L  L  L  L  L  L  L
+Fila 4 │  L  L  L  L  L  L  L  L  L  L
+Fila 5 │  L  L  L  L  L  L  L  L  L  L
+Fila 6 │  L  L  L  L  L  L  L  L  L  L
+Fila 7 │  L  L  L  L  L  L  L  L  L  L
+
+        L = libre · X = ocupado
+        ▲ La pantalla está en la parte superior (fila 0 = más cerca)
+
+=== Reservas ===
+✅ Reserva confirmada: fila 2, asiento 3
+❌ El asiento (2, 3) ya está ocupado
+⚠️ Asiento (9, 0) no válido. Valores válidos: fila 0–7, asiento 0–9 (números enteros).
+
+=== Sala tras las reservas ===
+
+        ══════════ PANTALLA ══════════
+
+          0  1  2  3  4  5  6  7  8  9
+Fila 0 │  L  L  L  L  L  L  L  L  L  L
+Fila 1 │  L  L  L  L  L  L  L  L  L  L
+Fila 2 │  L  L  L  X  L  L  L  L  L  L
+Fila 3 │  L  L  L  L  L  L  L  L  L  L
+Fila 4 │  L  L  L  L  L  L  L  L  L  L
+Fila 5 │  L  L  L  L  L  L  L  L  L  L
+Fila 6 │  L  L  L  L  L  L  L  L  L  L
+Fila 7 │  L  L  L  L  L  L  L  L  L  L
+
+        L = libre · X = ocupado
+        ▲ La pantalla está en la parte superior (fila 0 = más cerca)
+
+Ocupados: 1 · Disponibles: 79 · Total: 80
+```
+
+- **Checklist anti-objetos:** `grep -nE "\bclass\b|\binterface\b|new Map|new Set" src/` → vacío. Revisión manual: no hay literales `{ }` usados como datos (solo llaves de bloque y el import con nombre).
+- **Errores:** ninguno.
+- **Estado:** OK
+- **Commit:** pendiente (se registra en el Prompt 3)
