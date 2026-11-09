@@ -7,6 +7,16 @@
     <title>Taquilla · Cinema Seat Manager</title>
   </head>
   <body class="min-h-dvh bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <!-- Butaca vista desde atrás: un único símbolo reutilizado con <use> -->
+    <svg aria-hidden="true" width="0" height="0" class="absolute">
+      <symbol id="butaca" viewBox="0 0 40 40">
+        <rect x="2.5" y="15" width="6" height="19" rx="3" />
+        <rect x="31.5" y="15" width="6" height="19" rx="3" />
+        <rect x="6.5" y="26" width="27" height="9" rx="3" />
+        <rect x="9" y="4" width="22" height="25" rx="7" />
+      </symbol>
+    </svg>
+
     <div class="flex min-h-dvh flex-col">
       <header class="border-b border-slate-300 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
         <div class="flex flex-wrap items-baseline justify-between gap-2">
@@ -18,39 +28,60 @@
         </div>
       </header>
 
-      <main class="grid flex-1 grid-cols-1 gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
+      <main
+        class="grid flex-1 grid-cols-1 content-start gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_22rem] xl:grid-cols-[17rem_minmax(0,1fr)_22rem] xl:content-stretch"
+      >
+        <!-- Ficha compacta (móvil y pantallas medianas) -->
+        <section
+          id="ficha-compacta"
+          aria-label="Película en cartel"
+          class="flex items-center gap-3 rounded-xl border border-slate-300 bg-white p-3 lg:col-span-2 xl:hidden dark:border-slate-700 dark:bg-slate-900"
+        >
+          <div id="cartel-compacto" class="w-16 shrink-0 overflow-hidden rounded-md"></div>
+          <div class="min-w-0">
+            <p class="text-xs font-semibold tracking-wide text-slate-700 uppercase dark:text-slate-300">En cartel</p>
+            <h2 id="compacta-titulo" class="truncate text-base font-bold"></h2>
+            <p id="compacta-sesion" class="text-sm text-slate-700 dark:text-slate-300"></p>
+          </div>
+        </section>
+
+        <!-- Cartelera (escritorio) -->
+        <aside
+          aria-labelledby="cartelera-titulo"
+          class="hidden flex-col gap-3 rounded-xl border border-slate-300 bg-white p-4 xl:flex dark:border-slate-700 dark:bg-slate-900"
+        >
+          <p class="text-xs font-semibold tracking-wide text-slate-700 uppercase dark:text-slate-300">En cartel</p>
+          <div id="cartel-grande" class="overflow-hidden rounded-lg shadow-md"></div>
+          <h2 id="cartelera-titulo" class="text-xl leading-tight font-bold"></h2>
+          <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+            <dt class="text-slate-700 dark:text-slate-300">Género</dt>
+            <dd id="cartelera-genero"></dd>
+            <dt class="text-slate-700 dark:text-slate-300">Duración</dt>
+            <dd id="cartelera-duracion"></dd>
+            <dt class="text-slate-700 dark:text-slate-300">Edad</dt>
+            <dd id="cartelera-calificacion"></dd>
+            <dt class="text-slate-700 dark:text-slate-300">Formato</dt>
+            <dd id="cartelera-formato"></dd>
+            <dt class="text-slate-700 dark:text-slate-300">Sesión</dt>
+            <dd id="cartelera-sesion" class="font-semibold"></dd>
+          </dl>
+          <p id="cartelera-sinopsis" class="text-sm leading-relaxed text-slate-800 dark:text-slate-200"></p>
+        </aside>
+
         <!-- Mapa de sala -->
         <section
           aria-labelledby="titulo-mapa"
-          class="flex min-w-0 flex-col rounded-xl border border-slate-300 bg-white p-4 dark:border-slate-700 dark:bg-slate-900"
+          class="flex min-w-0 flex-col rounded-xl border border-slate-300 bg-white p-3 sm:p-4 dark:border-slate-700 dark:bg-slate-900"
         >
           <h2 id="titulo-mapa" class="sr-only">Mapa de sala</h2>
           <div class="flex flex-1 flex-col justify-center overflow-x-auto">
-            <div class="mx-auto w-max">
-              <div
-                aria-hidden="true"
-                class="mb-6 ml-10 rounded-b-3xl border-t-4 border-slate-500 pt-1 text-center text-xs font-semibold tracking-[0.4em] text-slate-700 uppercase dark:border-slate-400 dark:text-slate-300"
-              >
-                Pantalla
-              </div>
-              <div id="mapa" role="group" aria-label="Asientos de la sala" class="grid gap-1.5"></div>
+            <div class="mx-auto w-full max-w-[60rem] min-w-[30rem]">
+              <div id="mapa" role="group" aria-label="Butacas de la sala" class="grid"></div>
               <ul
+                id="leyenda"
                 aria-hidden="true"
-                class="mt-5 ml-10 flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-700 dark:text-slate-300"
-              >
-                <li class="flex items-center gap-2">
-                  <span class="grid size-6 place-items-center rounded border border-slate-500 bg-white font-mono text-xs font-bold text-slate-900 dark:bg-slate-800 dark:text-slate-100">L</span>
-                  Libre
-                </li>
-                <li class="flex items-center gap-2">
-                  <span class="grid size-6 place-items-center rounded bg-slate-800 font-mono text-xs font-bold text-white dark:bg-slate-200 dark:text-slate-900">X</span>
-                  Ocupado
-                </li>
-                <li class="flex items-center gap-2">
-                  <span class="grid size-6 place-items-center rounded border-4 border-amber-600 bg-amber-100 font-mono text-xs font-bold text-slate-900 dark:border-amber-400 dark:bg-amber-950 dark:text-amber-50">L</span>
-                  Propuesto (borde grueso)
-                </li>
-              </ul>
+                class="mt-4 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-slate-700 dark:text-slate-300"
+              ></ul>
             </div>
           </div>
         </section>
@@ -89,7 +120,7 @@
             aria-live="polite"
             class="min-h-12 rounded-lg border border-slate-300 bg-slate-50 p-3 text-sm dark:border-slate-700 dark:bg-slate-800"
           >
-            Seleccione un asiento para reservarlo.
+            Seleccione una butaca para reservarla.
           </p>
 
           <!-- Pareja -->

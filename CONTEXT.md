@@ -70,6 +70,7 @@ La imagen del enunciado resalta el par **(3,2)-(3,3)**, pero con ese recorrido e
 | `src/cinema.ts` | Lógica: tipo `SalaMatriz` y las 5 funciones del contrato. |
 | `src/main.ts` | Escenarios de prueba por consola (punto de entrada CLI). |
 | `src/web.ts` | Solo para el reto web opcional (Vite). |
+| `src/pelicula.json` | Rama `interfaz-web`: datos de presentación de la película inventada (ver §7). |
 | `index.html`, `vite.config.ts`, `src/style.css`, `src/vite-env.d.ts` | Infraestructura del reto web opcional. |
 | `CONTEXT.md`, `CLAUDE.md`, `.claude/skills/cinema-seat-manager/SKILL.md` | Contexto y reglas de trabajo. |
 | `SEGUIMIENTO.md`, `ERRORES.md`, `EVALUACION.md` | Trazabilidad del desarrollo y de la evaluación. |
@@ -81,3 +82,9 @@ npm run console    # ejecuta src/main.ts con tsx
 npm run test       # ejecuta los escenarios de prueba (tsx src/main.ts)
 npm run typecheck  # tsc --noEmit
 ```
+
+## 7. Datos adicionales en JSON (solo rama `interfaz-web`)
+
+- `src/pelicula.json` guarda los datos de **presentación** de una película **inventada** (*Eclipse en la Sala 8*): título, género, duración, calificación, formato, sesión y sinopsis. Aplica la restricción (e): los datos adicionales van en JSON. Es la **única** estructura de datos fuera de la matriz; `src/web.ts` la importa y no contiene literales `{…}`.
+- Para importarlo, `tsconfig.json` activa `"resolveJsonModule": true` **solo en esta rama**.
+- Una única sesión: no hay selector de fecha ni de horario (varias sesiones exigirían varias matrices).

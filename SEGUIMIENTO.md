@@ -15,6 +15,7 @@ Registro cronológico de cada prompt aplicado al repositorio, según el protocol
 | 6 | README final y npm audit fix (sin --force) | OK |
 | 6b | Separar entregas (main + v1.0-base / interfaz-web + v2.0-web) | OK |
 | 7 | Interfaz web de taquilla (rama `interfaz-web`, opcional) | OK |
+| 7b | Cartelera de película inventada y butacas SVG (rama `interfaz-web`) | OK |
 
 ---
 
@@ -1197,5 +1198,146 @@ Pruebas superadas: 25/25
     - Prueba funcional automática en **jsdom** (script en el scratchpad, fuera del repo) sobre el `index.html` y `src/web.ts` reales: reservar, reservar ocupado, flechas, buscar par (foco y `aria-label` "propuesto"), reservar par, deshacer, reserva rápida (válida, fuera de rango, vacía), límite de 10 en el registro, recargar (persiste), JSON inválido / corrupto / valores ≠ 0-1 → sala vacía, nueva sesión (cancelar y confirmar), sala llena → aviso. Resultado: `Interfaz (jsdom): 25/25`. El primer intento dio 24/25 por un fallo **de la prueba** (solo había 9 operaciones y se esperaban 10 en el registro); se corrigió el script, no la interfaz.
   - **Pendiente de prueba manual del usuario en un navegador real:** aspecto visual y contraste en modo claro y oscuro, foco visible, layout en móvil (panel debajo, scroll horizontal solo en el mapa), tamaño táctil, `Enter`/`Espacio` con teclado real, diálogo de confirmación de "Nueva sesión", y el puerto 5173 en Codespaces.
 - **Errores:** ninguno en el código del proyecto.
+- **Estado:** OK
+- **Commit:** `b0e146c`
+
+---
+
+## Prompt 7b — Cartelera de película inventada y butacas de cine (rama `interfaz-web`)
+
+- **Fecha:** 2026-11-09
+- **Rama:** `interfaz-web`. Nada de este prompt se commitea en `main`.
+- **Prompt literal:**
+
+````text
+Usa la skill cinema-seat-manager. Trabajamos SOLO en la rama interfaz-web (git switch interfaz-web). NUNCA hagas commit, merge ni push en main. Sigue sin formar parte de la evaluación.
+
+0. Mantenimiento: SEGUIMIENTO.md de esta rama, rellena el Commit del Prompt 7 con b0e146c.
+
+1. Película inventada (datos)
+   - Crea src/pelicula.json con una película original (no existe ni imita a ninguna real):
+     titulo: "Eclipse en la Sala 8", genero: "Thriller · Ciencia ficción", duracion: "1 h 52 min", calificacion: "+12", formato: "2D · VOSE", sesion: "Hoy · 18:00 · Sala 1", sinopsis: 2–3 frases originales (una proyeccionista descubre que cada butaca vendida altera el final de la película).
+   - El enunciado permite JSON para datos adicionales: esa es la ÚNICA estructura de datos fuera de la matriz. No escribas literales {…} en web.ts. Añade "resolveJsonModule": true a tsconfig.json para poder importarlo (solo en esta rama) y documéntalo en CONTEXT.md.
+   - Es solo presentación: una única sesión, sin selector de fecha ni horario (varias sesiones exigirían varias matrices).
+
+2. Cartelera (columna izquierda)
+   - Cartel vertical 2:3 generado como SVG inline en web.ts: composición original (degradado nocturno, un sol eclipsado, siluetas de butacas en primer plano, título y "+12"). Sin imágenes externas, sin fuentes descargadas, sin marcas.
+   - Debajo: título, género, duración, calificación, formato, sesión y sinopsis (desde pelicula.json).
+   - En móvil: ficha compacta horizontal (cartel pequeño + título + sesión) encima del mapa.
+
+3. Butacas en lugar de cuadrados
+   - Icono SVG propio de butaca vista desde atrás (respaldo redondeado + asiento + reposabrazos), un único <symbol> reutilizado con <use>.
+   - Estados (no solo color):
+     * libre: butaca en tono claro con contorno;
+     * ocupada: butaca gris oscura apagada con una "×" encima;
+     * propuesta (par contiguo): ámbar con contorno grueso y un "✓".
+   - Conserva el <button>, el aria-label "Fila F, asiento C, libre|ocupado|propuesto", el foco visible, las flechas y Enter/Espacio.
+   - Hover en libre: ligera elevación; cursor not-allowed en ocupada.
+   - Pantalla curva (arco SVG con brillo suave) arriba con el texto "PANTALLA".
+   - NO añadas pasillos: la sala visual debe coincidir con la matriz (si hubiera hueco entre dos columnas, buscarAsientosContiguos propondría parejas separadas por el pasillo).
+   - Mantén los números de columna arriba y de fila a la izquierda. La leyenda usa las tres butacas reales.
+
+4. Layout
+   - Escritorio: 3 columnas (cartelera | mapa | panel de taquilla). El mapa ESCALA para ocupar su columna (butacas con tamaño fluido, p. ej. clamp), sin el espacio vacío de la versión anterior.
+   - Móvil: ficha compacta → mapa (scroll horizontal solo dentro del mapa si no cabe; área táctil ≥ 40px) → panel.
+   - Claro/oscuro con prefers-color-scheme; contraste AA en los tres estados de butaca.
+
+5. Sin cambios de lógica: src/cinema.ts y src/main.ts no se tocan. npm run typecheck y npm run test ; echo "exit: $?" deben seguir en 25/25.
+
+6. Documentación (en esta rama): README.md (sección "Interfaz web" con la película inventada y las butacas), EVALUACION.md (funcionalidad adicional), CONTEXT.md (pelicula.json + resolveJsonModule), SEGUIMIENTO.md (entrada del Prompt 7b, Commit "pendiente (se registra en el Prompt 8)"). Checklist anti-objetos sobre src/web.ts.
+
+7. Cierre:
+   - Un único commit en interfaz-web:
+     feat(web): añadir cartelera de película inventada y butacas de cine
+     (cuerpo: "Prompt 7b: ficha y cartel SVG originales desde pelicula.json, butacas SVG con tres estados, pantalla curva, mapa fluido en 3 columnas; sin cambios en cinema.ts ni main.ts.")
+   - git push
+   - Tag nuevo (no muevas v2.0-web): git tag -a v2.1-web -m "Entrega 2.1: cartelera y butacas" && git push origin v2.1-web
+   - El PR abierto se actualiza solo; no crees otro.
+
+Enséñame git log --oneline -3, git tag -n, git status -sb y git log --oneline -1 main (debe seguir en 303cef2).
+````
+
+- **Objetivo:** mejorar la presentación de la interfaz web (fuera de evaluación): cartelera con una película inventada, butacas SVG con tres estados, pantalla curva y mapa fluido en 3 columnas, sin cambiar la lógica.
+- **Ficheros creados:** `src/pelicula.json` (película original *Eclipse en la Sala 8*; sinopsis propia).
+- **Ficheros modificados:**
+  - `src/web.ts`: cartel SVG original (`marcadoCartel` / `pintarCartel`), cartelera y ficha compacta (`pintarCartelera`), butacas (`crearDibujoButaca`, `aplicarEstadoButaca`), pantalla curva (`crearPantalla`), leyenda con butacas reales (`construirLeyenda`); el resto de operaciones de taquilla sin cambios de comportamiento.
+  - `index.html`: `<symbol id="butaca">` único (respaldo redondeado + asiento + reposabrazos), layout de 3 columnas en `xl`, ficha compacta en móvil / pantallas medianas.
+  - `tsconfig.json`: `"resolveJsonModule": true` (solo en esta rama).
+  - `README.md`, `CONTEXT.md` (§7: `pelicula.json` + `resolveJsonModule`), `EVALUACION.md` (funcionalidad adicional), `SEGUIMIENTO.md` (hash del Prompt 7 y esta entrada).
+  - **Sin cambios:** `src/cinema.ts` y `src/main.ts` (`git diff --stat -- src/cinema.ts src/main.ts` → vacío).
+- **Decisiones:**
+  - **Estados no solo por color:** libre = butaca clara con contorno y sin marca; ocupada = butaca gris oscura con `×` y `cursor-not-allowed`; propuesta = ámbar, contorno de 3,5 (frente a 1,5) y `✓`. Hover en libre: elevación de 2 px (desactivada con `prefers-reduced-motion`).
+  - **Marca dentro del mismo SVG** (`<text>` junto al `<use>`), para que escale con la butaca.
+  - **Sin pasillos:** la cuadrícula tiene exactamente 10 columnas de butacas contiguas, igual que la matriz.
+  - **Mapa fluido:** `grid-cols-[1.75rem_repeat(10,minmax(2.5rem,1fr))]` dentro de un contenedor `w-full max-w-[60rem] min-w-[30rem]` con `overflow-x-auto`: las butacas crecen con la columna, nunca bajan de 40 px y, si no caben (móvil), solo el mapa hace scroll horizontal. Se usa `minmax(…, 1fr)` en lugar de `clamp` porque el tamaño depende del ancho de la columna y no del viewport.
+  - **Layout por tamaños:** `xl` (≥ 1280 px) 3 columnas `17rem | mapa | 22rem`; `lg` ficha compacta arriba + mapa | panel; móvil ficha compacta → mapa → panel. Con 3 columnas por debajo de `xl` el mapa quedaría por debajo de 40 px por butaca.
+  - **Cartel:** SVG 2:3 generado en `web.ts` (degradado nocturno, estrellas, corona y disco del eclipse, dos filas de siluetas de butaca usando el mismo `#butaca`, título y `+12`). Textos con `font-family="system-ui, sans-serif"` (sin fuentes descargadas), sin imágenes externas ni marcas. Los ids de degradado llevan prefijo para no repetirse entre el cartel grande y el compacto. Los textos se rellenan con `textContent` desde `pelicula.json`.
+  - **Contraste** (colores de referencia de Tailwind):
+
+```text
+Claro · libre: contorno slate-600 / fondo blanco             7.58:1
+Claro · ocupada: × blanca / butaca slate-600                 7.58:1
+Claro · propuesta: ✓ slate-900 / ámbar-300                  12.38:1
+Claro · propuesta: contorno ámbar-800 / fondo blanco         7.09:1
+Oscuro · libre: butaca slate-200 / fondo slate-900          14.48:1
+Oscuro · ocupada: × slate-100 / butaca slate-700             9.45:1
+Oscuro · ocupada: contorno slate-500 / fondo slate-900       3.75:1
+Oscuro · propuesta: ✓ slate-900 / ámbar-400                 10.69:1
+Oscuro · propuesta: contorno ámbar-100 / fondo slate-900    16.03:1
+```
+
+    Las marcas `×` / `✓` superan 4.5:1 (texto) y los contornos 3:1 (elementos gráficos, WCAG 1.4.11).
+- **`npm run typecheck`:** `tsc --noEmit` → exit 0.
+- **`npm run test ; echo "exit: $?"`:** `Pruebas superadas: 25/25` / `exit: 0`.
+- **Checklist anti-objetos sobre `src/web.ts`:** `grep -nE "\bclass\b|\binterface\b|new Map|new Set|\bthis\b|\bprocess\b" src/web.ts` → solo el comentario que prohíbe `process` y atributos SVG `class="…"` dentro de strings (no son clases de JS). `grep -nE "(=|\(|\[|,|return)\s*\{" src/web.ts` → vacío. JSDoc en 25/25 funciones.
+- **Verificación de la interfaz:**
+  - **Hecho por el asistente (sin navegador):** `vite build` OK (el CSS incluye `fill-amber-300`, `stroke-width:3.5`, `repeat(10,minmax(2.5rem,1fr))`, `xl:hidden`…; `dist/` borrado). `npm run dev` sirve `index.html` con `symbol id="butaca"`, `/src/web.ts` (200) y `pelicula.json`. Prueba en jsdom (fuera del repo) adaptada a las butacas y ampliada con cartelera, cartel, ids únicos, ficha compacta, pantalla y leyenda:
+
+```text
+Carga inicial
+  ✔ 80 botones de asiento
+  ✔ aria-label libre: Fila 0, asiento 0, libre
+  ✔ libre sin marca, <use #butaca> y contador 0 / 80 / 0 %
+  ✔ cartelera: Eclipse en la Sala 8 · Hoy · 18:00 · Sala 1
+  ✔ cartel SVG: ECLIPSE / +12
+  ✔ ids de degradado únicos por cartel
+  ✔ ficha compacta: Hoy · 18:00 · Sala 1 · +12
+  ✔ pantalla + leyenda con 3 butacas reales
+  ✔ Reservar par y Deshacer desactivados
+Reservar (clic) y reservar ocupado
+  ✔ mensaje: ✅ Reserva confirmada: fila 2, asiento 3
+  ✔ butaca × + aria ocupado + not-allowed; contador 1 / 79 / 1 %
+  ✔ mensaje: ❌ Asiento ocupado: fila 2, asiento 3
+Teclado
+  ✔ → mueve foco a 0,1
+  ✔ ↓ mueve foco a 1,1
+  ✔ ↑ en fila 0 no se sale del mapa
+Buscar par y reservar par
+  ✔ mensaje: 💑 Asientos contiguos disponibles: fila 0, asientos 0 y 1
+  ✔ aria propuesto + foco en 0,0 + Reservar par activo
+  ✔ par reservado, contador 3 / 77 / 4 %
+Deshacer
+  ✔ mensaje: ↩️ Reserva anulada: fila 0, asiento 1
+Reserva rápida
+  ✔ mensaje: ✅ Reserva confirmada: fila 5, asiento 7
+  ✔ mensaje: ⚠️ Posición no válida: fila 9, asiento 0. Valores válidos: fila 0–7, asiento 0–9 (números enteros).
+  ✔ mensaje: ⚠️ Indique fila y asiento.
+  ✔ registro limitado a 10 (hay 10), con hora
+Persistencia (recargar)
+  ✔ tras recargar: contador 7 / 73 / 9 %, 2,3 = ×
+  ✔ JSON inválido (no 8x10) → sala vacía: 0 / 80 / 0 %
+  ✔ JSON corrupto → sala vacía: 0 / 80 / 0 %
+  ✔ valor distinto de 0/1 → sala vacía: 0 / 80 / 0 %
+Nueva sesión
+  ✔ cancelar confirmación no borra: 7 / 73 / 9 %
+  ✔ confirmar vacía sala: 0 / 80 / 0 % / 🆕 Nueva sesión: todas las butacas libres
+Sala llena → aviso
+  ✔ mensaje: ⚠️ No hay dos asientos contiguos libres en ninguna fila. Ofrezca asientos separados.
+
+Interfaz (jsdom): 30/30
+```
+
+  - **Pendiente de prueba manual del usuario en un navegador real:** aspecto del cartel y de las butacas en claro / oscuro, elevación al pasar el ratón, layout en 3 columnas (≥ 1280 px), en pantallas medianas y en móvil (scroll solo en el mapa), foco visible sobre las butacas y el puerto 5173 en Codespaces.
+- **Errores:** ninguno.
 - **Estado:** OK
 - **Commit:** pendiente (se registra en el Prompt 8)

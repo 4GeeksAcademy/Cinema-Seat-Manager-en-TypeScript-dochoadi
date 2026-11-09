@@ -111,14 +111,15 @@ npm run dev         # Vite en el puerto 5173
 
 Qué se puede hacer:
 
-- **Mapa de sala** con la pantalla arriba y los mismos índices que la consola. Cada asiento es un botón: `L` libre, `X` ocupado, borde grueso para el par propuesto (el estado no depende solo del color). Clic, `Enter` o `Espacio` para reservar; flechas para moverse.
+- **Cartelera** con una película **inventada**, *Eclipse en la Sala 8* (thriller de ciencia ficción, +12, sesión única «Hoy · 18:00 · Sala 1»). El cartel es un SVG original generado en `src/web.ts` (cielo nocturno, sol eclipsado, siluetas de butacas), sin imágenes ni fuentes externas. Los datos están en `src/pelicula.json`.
+- **Mapa de sala** con pantalla curva arriba y los mismos índices que la consola (números de columna arriba y de fila a la izquierda, **sin pasillos**: la sala visual coincide con la matriz). Cada butaca es un botón con un icono SVG de butaca vista desde atrás y tres estados que no dependen solo del color: **libre** (clara, con contorno), **ocupada** (gris oscura con `×`) y **propuesta** (ámbar, contorno grueso y `✓`). Clic, `Enter` o `Espacio` para reservar; flechas para moverse.
 - **Contador en vivo:** ocupados, disponibles y % de ocupación.
 - **Buscar 2 juntos** (resalta el par y le pone el foco) y **Reservar par**.
 - **Reserva rápida** por fila y asiento, para reservas telefónicas.
 - **Deshacer última reserva** (usa `liberarAsiento`) y **Nueva sesión** (con confirmación).
 - **Registro** de las últimas 10 operaciones con la hora y el mensaje devuelto.
 - La sala se guarda en `localStorage` como JSON y se recupera al recargar (si el dato no es una sala 8x10 de 0/1, se empieza con la sala vacía). El historial de deshacer no se guarda: al recargar empieza vacío.
-- Responsive (en móvil el panel va debajo del mapa) y modo claro / oscuro según el sistema.
+- **Layout:** en escritorio ancho, 3 columnas (cartelera · mapa · panel) con butacas de tamaño fluido; en pantallas medianas, ficha compacta arriba y mapa + panel; en móvil, ficha compacta → mapa (scroll horizontal solo dentro del mapa, butacas de 40 px como mínimo) → panel. Modo claro / oscuro según el sistema.
 
 ## Estructura del proyecto
 
@@ -130,6 +131,7 @@ Qué se puede hacer:
 │   ├── cinema.ts        # lógica: matriz y funciones
 │   ├── main.ts          # guion de pruebas por consola
 │   ├── web.ts           # interfaz web de taquilla (Entrega 2)
+│   ├── pelicula.json    # datos de la película inventada (Entrega 2)
 │   ├── style.css        # estilos (Tailwind) de la interfaz web
 │   └── vite-env.d.ts    # tipos de Vite
 ├── CLAUDE.md
