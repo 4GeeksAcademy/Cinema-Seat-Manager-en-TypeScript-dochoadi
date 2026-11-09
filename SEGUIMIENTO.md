@@ -9,6 +9,7 @@ Registro cronológico de cada prompt aplicado al repositorio, según el protocol
 | 1 | Limpieza de plantilla, contexto, skill y esqueleto de documentación | OK |
 | 1b | Regla de commit por prompt y sincronización de package-lock.json | OK |
 | 2 | Funcionalidad principal: crearSala, mostrarSala, reservarAsiento, contarAsientos | OK |
+| 3 | Búsqueda de asientos contiguos (while + parada en el primer par) | OK |
 
 ---
 
@@ -223,4 +224,148 @@ Ocupados: 1 · Disponibles: 79 · Total: 80
 - **Checklist anti-objetos:** `grep -nE "\bclass\b|\binterface\b|new Map|new Set" src/` → vacío. Revisión manual: no hay literales `{ }` usados como datos (solo llaves de bloque y el import con nombre).
 - **Errores:** ninguno.
 - **Estado:** OK
-- **Commit:** pendiente (se registra en el Prompt 3)
+- **Commit:** `a649c4c`
+
+---
+
+## Prompt 3 — Búsqueda de asientos contiguos
+
+- **Fecha:** 2026-11-09
+- **Prompt literal:**
+
+````text
+Usa la skill cinema-seat-manager.
+
+0. Mantenimiento previo:
+   - En SEGUIMIENTO.md, rellena el campo Commit de la entrada del Prompt 2 con a649c4c.
+   - Unifica el formato de los mensajes de reservarAsiento para que todos digan "fila F, asiento C" (el de ocupado y el de no válido usan ahora "(F, C)"). Ejemplo: "❌ La fila 2, asiento 3 ya está ocupado".
+   - Protege reservarAsiento y mostrarSala contra una matriz vacía (sala.length === 0): no deben acceder a sala[0].
+
+1. Añade a src/cinema.ts:
+
+buscarAsientosContiguos(sala): number[][] | null
+- Busca dos asientos libres consecutivos en la MISMA fila (horizontal).
+- Recorre fila a fila (0→7) y, dentro de cada fila, columna a columna comparando columna con columna+1.
+- Usa un bucle while para recorrer las filas, con una condición de parada (encontrado) de modo que se detenga en el PRIMER par (esto completa el "while" del criterio 4).
+- Devuelve [[fila, col], [fila, col + 1]] o null si no hay ninguno.
+- Nunca accedas fuera de los límites (col + 1 < número de columnas). Matriz vacía → null.
+
+2. Añade una función de presentación:
+mostrarResultadoContiguos(resultado: number[][] | null): void
+- Si hay par: "💑 Asientos contiguos disponibles: fila F, asientos C1 y C2".
+- Si es null: "⚠️ No hay dos asientos contiguos libres en ninguna fila. Ofrezca asientos separados."
+
+3. Verificación en src/main.ts (se reorganizará en el Prompt 4):
+Añade la sala de la imagen del enunciado como literal number[][] (L=0, X=1):
+fila 0: L X L L X X L L X L
+fila 1: X L L X L L X X L X
+fila 2: L L X L X L L L X L
+fila 3: L X L L L X X L L X
+fila 4: X L L X X L L X L L
+fila 5: L L X L L X L L X X
+fila 6: L X L L X L X L L L
+fila 7: X L L X L L L X X L
+Muéstrala, cuenta y busca contiguos. Resultado esperado: conteo [31, 49] y par [[0,2],[0,3]].
+Si el resultado no coincide, NO ajustes lo esperado: busca el fallo y regístralo en ERRORES.md.
+Añade también una prueba rápida de sala llena (todo 1) que devuelva null.
+
+4. Documentación:
+- ERRORES.md: marca ERR-000 como verificado, con la salida que lo demuestra.
+- EVALUACION.md: criterio 4 → Cumplido (indica dónde está el while), criterio 5 → Cumplido con evidencia, y los requisitos de la funcionalidad avanzada.
+- SEGUIMIENTO.md: entrada del Prompt 3, Commit "pendiente (se registra en el Prompt 4)".
+
+Ejecuta npm run typecheck y npm run test, pega la salida y cierra con un único commit + push:
+feat: añadir búsqueda de asientos contiguos
+(cuerpo: "Prompt 3: buscarAsientosContiguos con while y parada en el primer par, mostrarResultadoContiguos, verificación con la sala del enunciado (31/49, par 0,2-0,3); unifica formato de mensajes.")
+Enséñame `git log --oneline -2` y `git status -sb`.
+````
+
+- **Objetivo:** implementar la funcionalidad avanzada (primer par de asientos contiguos libres en horizontal, con `while` y parada temprana), su presentación para taquilla, verificarla con la sala del enunciado y unificar el formato de los mensajes de reserva.
+- **Ficheros modificados:**
+  - `src/cinema.ts`: nuevas `buscarAsientosContiguos` y `mostrarResultadoContiguos`; `reservarAsiento` con mensajes "fila F, asiento C" y protección ante sala vacía; `mostrarSala` con protección ante sala vacía (ninguna accede a `sala[0]` si `sala.length === 0`).
+  - `src/main.ts`: sala del enunciado como `number[][]`, comprobaciones ✔/✘ (conteo, par), sala llena y sala vacía → `null`.
+  - `ERRORES.md` (ERR-000 verificado), `EVALUACION.md` (criterios 3, 4, 5 y F5), `SEGUIMIENTO.md` (hash del Prompt 2 y esta entrada).
+- **Ficheros creados:** ninguno.
+- **Decisiones:**
+  - Las filas se recorren con un `while (fila < sala.length && !encontrado)` y las columnas con otro `while (columna + 1 < longitud && !encontrado)`; así la parada en el primer par vale para ambos niveles y nunca se lee fuera de la fila.
+  - Matriz vacía: `mostrarSala` imprime un aviso y `reservarAsiento` devuelve "⚠️ La sala no tiene asientos: no se puede reservar."
+- **`npm run typecheck`:** `tsc --noEmit` → sin errores (exit 0).
+- **`npm run test`:** exit 0. Salida:
+
+```text
+=== Sala recién creada ===
+
+        ══════════ PANTALLA ══════════
+
+          0  1  2  3  4  5  6  7  8  9
+Fila 0 │  L  L  L  L  L  L  L  L  L  L
+Fila 1 │  L  L  L  L  L  L  L  L  L  L
+Fila 2 │  L  L  L  L  L  L  L  L  L  L
+Fila 3 │  L  L  L  L  L  L  L  L  L  L
+Fila 4 │  L  L  L  L  L  L  L  L  L  L
+Fila 5 │  L  L  L  L  L  L  L  L  L  L
+Fila 6 │  L  L  L  L  L  L  L  L  L  L
+Fila 7 │  L  L  L  L  L  L  L  L  L  L
+
+        L = libre · X = ocupado
+        ▲ La pantalla está en la parte superior (fila 0 = más cerca)
+
+=== Reservas ===
+✅ Reserva confirmada: fila 2, asiento 3
+❌ La fila 2, asiento 3 ya está ocupado
+⚠️ La fila 9, asiento 0 no es válido. Valores válidos: fila 0–7, asiento 0–9 (números enteros).
+
+=== Sala tras las reservas ===
+
+        ══════════ PANTALLA ══════════
+
+          0  1  2  3  4  5  6  7  8  9
+Fila 0 │  L  L  L  L  L  L  L  L  L  L
+Fila 1 │  L  L  L  L  L  L  L  L  L  L
+Fila 2 │  L  L  L  X  L  L  L  L  L  L
+Fila 3 │  L  L  L  L  L  L  L  L  L  L
+Fila 4 │  L  L  L  L  L  L  L  L  L  L
+Fila 5 │  L  L  L  L  L  L  L  L  L  L
+Fila 6 │  L  L  L  L  L  L  L  L  L  L
+Fila 7 │  L  L  L  L  L  L  L  L  L  L
+
+        L = libre · X = ocupado
+        ▲ La pantalla está en la parte superior (fila 0 = más cerca)
+
+Ocupados: 1 · Disponibles: 79 · Total: 80
+
+=== Sala del enunciado ===
+
+        ══════════ PANTALLA ══════════
+
+          0  1  2  3  4  5  6  7  8  9
+Fila 0 │  L  X  L  L  X  X  L  L  X  L
+Fila 1 │  X  L  L  X  L  L  X  X  L  X
+Fila 2 │  L  L  X  L  X  L  L  L  X  L
+Fila 3 │  L  X  L  L  L  X  X  L  L  X
+Fila 4 │  X  L  L  X  X  L  L  X  L  L
+Fila 5 │  L  L  X  L  L  X  L  L  X  X
+Fila 6 │  L  X  L  L  X  L  X  L  L  L
+Fila 7 │  X  L  L  X  L  L  L  X  X  L
+
+        L = libre · X = ocupado
+        ▲ La pantalla está en la parte superior (fila 0 = más cerca)
+
+Ocupados: 31 · Disponibles: 49 · Total: 80
+💑 Asientos contiguos disponibles: fila 0, asientos 2 y 3
+Comprobaciones:
+  ✔ conteo [ocupados, disponibles]: [31,49]
+  ✔ primer par contiguo: [[0,2],[0,3]]
+
+=== Sala llena ===
+⚠️ No hay dos asientos contiguos libres en ninguna fila. Ofrezca asientos separados.
+Comprobaciones:
+  ✔ sala llena → null: null
+  ✔ sala vacía (0 filas) → null: null
+```
+
+- **Verificación de lo esperado:** conteo `[31, 49]` ✔, par `[[0,2],[0,3]]` ✔ (fila 0, no fila 3), sala llena → `null` ✔, `grep -n while src/cinema.ts` → L183, L186.
+- **Checklist anti-objetos:** `grep -nE "\bclass\b|\binterface\b|new Map|new Set" src/` → vacío. Revisión manual: sin literales `{ }` usados como datos (el par se devuelve como arreglo `number[][]`).
+- **Errores:** ninguno.
+- **Estado:** OK
+- **Commit:** pendiente (se registra en el Prompt 4)

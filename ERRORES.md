@@ -24,7 +24,15 @@ Cada error de compilación, ejecución, resultado incorrecto o desviación de un
 - **Síntoma (literal):** la imagen del enunciado resalta como resultado de `buscarAsientosContiguos` el par **(3,2)-(3,3)**, mientras que el texto pide devolver el **primer** par de asientos contiguos libres; recorriendo la sala de ejemplo, el primer par es **(0,2)-(0,3)**.
 - **Causa raíz:** la ilustración del enunciado no es coherente con la definición textual de "primer par".
 - **Solución aplicada:** se sigue el **texto**. "Primer par" = recorrido fila a fila (0→7) y columna a columna (0→9); se devuelve `[[f, c], [f, c + 1]]` del primer `c` con `sala[f][c] === 0 && sala[f][c + 1] === 0`. Decisión documentada en [CONTEXT.md](CONTEXT.md) §4.
-- **Verificación:** pendiente — se comprobará con un escenario en `src/main.ts` que reproduzca la sala de ejemplo y espere `(0,2)-(0,3)`.
+- **Verificación:** ✔ verificado en el Prompt 3. `src/main.ts` reproduce la sala del enunciado como `number[][]` y `npm run test` muestra:
+
+  ```text
+  Ocupados: 31 · Disponibles: 49 · Total: 80
+  💑 Asientos contiguos disponibles: fila 0, asientos 2 y 3
+  Comprobaciones:
+    ✔ conteo [ocupados, disponibles]: [31,49]
+    ✔ primer par contiguo: [[0,2],[0,3]]
+  ```
 
 ---
 

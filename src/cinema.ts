@@ -48,14 +48,19 @@ export function crearSala(filas: number, columnas: number): SalaMatriz {
  *
  * Imprime la pantalla en la parte superior, una cabecera con los números de
  * columna, cada fila precedida de su número, "L" para los asientos libres y
- * "X" para los ocupados, y una leyenda final.
+ * "X" para los ocupados, y una leyenda final. Si la sala está vacía solo
+ * muestra un aviso.
  *
  * @param sala - Matriz de asientos a mostrar.
  * @returns Nada; solo escribe en la consola.
  */
 export function mostrarSala(sala: SalaMatriz): void {
+  if (sala.length === 0) {
+    console.log("⚠️ La sala no tiene asientos que mostrar.");
+    return;
+  }
   const totalFilas = sala.length;
-  const totalColumnas = totalFilas > 0 ? sala[0].length : 0;
+  const totalColumnas = sala[0].length;
 
   // Ancho de la etiqueta de fila (ej.: "Fila 7") y de cada celda.
   const anchoEtiquetaFila = `Fila ${totalFilas - 1}`.length;
@@ -103,6 +108,7 @@ export function mostrarSala(sala: SalaMatriz): void {
 /**
  * Intenta reservar un asiento concreto de la sala.
  *
+ * Si la sala está vacía devuelve un aviso sin acceder a la matriz.
  * Valida en este orden: que fila y columna sean enteros dentro de rango y
  * que el asiento esté libre. Si todo es correcto, marca el asiento como
  * ocupado (1) modificando la matriz recibida.
@@ -113,19 +119,22 @@ export function mostrarSala(sala: SalaMatriz): void {
  * @returns Mensaje legible para taquilla con el resultado de la operación.
  */
 export function reservarAsiento(sala: SalaMatriz, fila: number, columna: number): string {
+  if (sala.length === 0) {
+    return "⚠️ La sala no tiene asientos: no se puede reservar.";
+  }
   const totalFilas = sala.length;
-  const totalColumnas = totalFilas > 0 ? sala[0].length : 0;
+  const totalColumnas = sala[0].length;
 
   const filaValida = Number.isInteger(fila) && fila >= 0 && fila < totalFilas;
   const columnaValida = Number.isInteger(columna) && columna >= 0 && columna < totalColumnas;
 
   if (!filaValida || !columnaValida) {
     return (
-      `⚠️ Asiento (${fila}, ${columna}) no válido. ` +
+      `⚠️ La fila ${fila}, asiento ${columna} no es válido. ` +
       `Valores válidos: fila 0–${totalFilas - 1}, asiento 0–${totalColumnas - 1} (números enteros).`
     );
   } else if (sala[fila][columna] === OCUPADO) {
-    return `❌ El asiento (${fila}, ${columna}) ya está ocupado`;
+    return `❌ La fila ${fila}, asiento ${columna} ya está ocupado`;
   } else {
     sala[fila][columna] = OCUPADO;
     return `✅ Reserva confirmada: fila ${fila}, asiento ${columna}`;
@@ -153,4 +162,59 @@ export function contarAsientos(sala: SalaMatriz): [number, number] {
     }
   }
   return [ocupados, disponibles];
+}
+
+/**
+ * Busca el primer par de asientos libres contiguos en horizontal.
+ *
+ * Recorre las filas de arriba abajo (0 → última) con un bucle `while` que se
+ * detiene en cuanto encuentra un par; dentro de cada fila compara cada
+ * columna con la siguiente (columna + 1), sin salirse nunca de los límites.
+ *
+ * @param sala - Matriz de asientos donde buscar.
+ * @returns `[[fila, columna], [fila, columna + 1]]` con el primer par libre,
+ *   o `null` si no hay ninguno (o la sala está vacía).
+ */
+export function buscarAsientosContiguos(sala: SalaMatriz): number[][] | null {
+  let resultado: number[][] | null = null;
+  let encontrado = false;
+  let fila = 0;
+
+  while (fila < sala.length && !encontrado) {
+    const asientosDeLaFila = sala[fila];
+    let columna = 0;
+    while (columna + 1 < asientosDeLaFila.length && !encontrado) {
+      if (asientosDeLaFila[columna] === LIBRE && asientosDeLaFila[columna + 1] === LIBRE) {
+        resultado = [
+          [fila, columna],
+          [fila, columna + 1],
+        ];
+        encontrado = true;
+      } else {
+        columna++;
+      }
+    }
+    fila++;
+  }
+
+  return resultado;
+}
+
+/**
+ * Muestra por consola el resultado de la búsqueda de asientos contiguos
+ * con un mensaje pensado para el personal de taquilla.
+ *
+ * @param resultado - Par devuelto por `buscarAsientosContiguos`, o `null`.
+ * @returns Nada; solo escribe en la consola.
+ */
+export function mostrarResultadoContiguos(resultado: number[][] | null): void {
+  if (resultado === null) {
+    console.log("⚠️ No hay dos asientos contiguos libres en ninguna fila. Ofrezca asientos separados.");
+  } else {
+    const [primerAsiento, segundoAsiento] = resultado;
+    console.log(
+      `💑 Asientos contiguos disponibles: fila ${primerAsiento[0]}, ` +
+        `asientos ${primerAsiento[1]} y ${segundoAsiento[1]}`,
+    );
+  }
 }
