@@ -88,7 +88,7 @@ Termina ejecutando `npm run typecheck` y enseñándome el árbol de ficheros res
 - **Checklist anti-objetos:** `grep -nE "\bclass\b|\binterface\b|new Map|new Set" src/` → vacío.
 - **Errores:** ninguno de código. Registrada `ERR-000` (discrepancia de enunciado) en [ERRORES.md](ERRORES.md).
 - **Estado:** OK
-- **Commit:** _pendiente_
+- **Commit:** `0547e31`
 
 ---
 
@@ -123,4 +123,4 @@ Termina ejecutando `npm run typecheck` y enseñándome el árbol de ficheros res
 - **Checklist anti-objetos:** `grep -nE "\bclass\b|\binterface\b|new Map|new Set" src/` → vacío.
 - **Errores:** ninguno.
 - **Estado:** OK
-- **Commit:** _pendiente_
+- **Commit:** `12efeaf`
