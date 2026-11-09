@@ -156,5 +156,5 @@ Los hallazgos de mejora y cosméticos quedan documentados aquí, **sin cambios d
 - **El código evaluado no cambia:** `git diff v1.0-base -- src/ package.json tsconfig.json` → **vacío**. `npm run typecheck` → exit 0; `npm run test` → `Pruebas superadas: 20/20`.
 - **Hallazgos cosméticos** (rango "0–-1" con `[[]]`, "L" para valores distintos de 0/1, referencia "ERR-001" en la salida): quedan documentados **sin cambios**, para no alterar el código evaluado.
 - **Avisos de `npm audit`:** sin cambios; ver "Riesgos conocidos".
-- **Tag `v1.1-base`:** pendiente de que el usuario confirme la página en el navegador.
+- **Tag `v1.1-base`:** creado en el Prompt 8d, tras la confirmación del usuario en el navegador, sobre el commit de cierre de `main`. Es la Entrega 1 final; su `src/` es idéntico al de `v1.0-base`, el commit evaluado.
 

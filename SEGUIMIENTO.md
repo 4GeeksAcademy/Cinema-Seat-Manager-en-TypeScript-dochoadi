@@ -18,6 +18,7 @@ Registro cronológico de cada prompt aplicado al repositorio, según el protocol
 | 8a | README sin sección duplicada, versión 3 → `v2.2-web` (+ cabecera web en `interfaz-web`) | OK |
 | 8b | Evaluación final independiente de la Entrega 1 (subagente con contexto limpio) | OK |
 | 8c | `index.html` mínima en la versión de consola (rama `main`) | OK |
+| 8d | Cierre: README sin capturas, versiones 1 y 3 en `v1.1-base` / `v2.3-web`, tags finales | OK |
 
 ---
 
@@ -1278,7 +1279,7 @@ Enséñame: el veredicto global, la tabla de los 8 criterios del evaluador, las 
 
 - **Fecha:** 2026-11-09
 - **Rama de esta entrada:** `main` (parte A). La parte B se registra en el SEGUIMIENTO de `interfaz-web`.
-- **Prompt literal** (llegó cortado al final, en el punto 10: "…reservar el"; se registra tal cual):
+- **Prompt literal** (llegó cortado al final, en el punto 10: "…reservar el". En el Prompt 8d se completa con el final literal facilitado por el usuario: "propuesto, deshacer). NO crees tags: …" hasta "…git status -sb."; no se ha inventado texto):
 
 `````text
 Usa la skill cinema-seat-manager. NUNCA muevas ni borres tags existentes. Etiqueta solo después de que yo confirme en el navegador.
@@ -1308,7 +1309,9 @@ PARTE B — interfaz-web (git switch interfaz-web)
    (cuerpo: "Prompt 8c: 'Otra opción' recorre los pares disponibles reutilizando buscarAsientosContiguos sobre una copia de la sala; registro sin duplicados.")
 
 PARTE C — antes de etiquetar
-10. Deja arrancado npm run dev en interfaz-web y dime qué tengo que comprobar en el navegador (pulsar "Otra opción" varias veces hasta el reinicio, reservar el
+10. Deja arrancado npm run dev en interfaz-web y dime qué tengo que comprobar en el navegador (pulsar "Otra opción" varias veces hasta el reinicio, reservar el propuesto, deshacer). NO crees tags: te los pediré cuando confirme que todo está bien.
+
+Enséñame git log --oneline -1 main, git log --oneline -1 interfaz-web y git status -sb.
 `````
 
 - **Objetivo:** resolver el hallazgo "restos de la plantilla web en `main`" de la evaluación independiente sin tocar el código evaluado.
@@ -1324,4 +1327,43 @@ PARTE C — antes de etiquetar
 - **Tag `v1.1-base`:** **no creado**; queda a la espera de que el usuario confirme la página en el navegador.
 - **Errores:** ninguno.
 - **Estado:** OK
-- **Commit:** pendiente (se registra en el siguiente prompt)
+- **Commit:** `5a2bf1a`
+
+---
+
+## Prompt 8d — Cierre de la entrega con tags finales (rama `main`)
+
+- **Fecha:** 2026-11-09
+- **Rama de esta entrada:** `main`. El mismo prompt se aplica en `main` y en `interfaz-web`, con un commit en cada una.
+- **Prompt literal:**
+
+````text
+Usa la skill cinema-seat-manager. Ya he verificado en el navegador las versiones 1 y 3. Cerramos SIN capturas. NO muevas tags existentes.
+
+1. SEGUIMIENTO.md (ambas ramas): el prompt del 8c llegó truncado. Completa su texto literal con este final exacto y anótalo:
+   "propuesto, deshacer). NO crees tags: te los pediré cuando confirme que todo está bien.
+
+   Enséñame git log --oneline -1 main, git log --oneline -1 interfaz-web y git status -sb."
+   Rellena los Commit del 8c: main 5a2bf1a, rama 6d98cd8. Añade la decisión "las parejas propuestas no se solapan" en la entrada 8c de la rama.
+2. Ambas ramas: elimina del README todas las referencias a docs/capturas/ (la subsección "Verlo sin ejecutar nada" queda solo con los enlaces al código de cada tag y al PR), borra docs/capturas/ con su .gitkeep y quítala del árbol del proyecto.
+3. main: README → versión 1 apunta a v1.1-base y versión 3 a v2.3-web. Entrada 8d en SEGUIMIENTO.md (nota: el último commit de cada rama no puede registrar su propio hash). Verifica diff vacío de src/ package.json tsconfig.json frente a v1.0-base, typecheck y test 20/20. Commit + push: "docs: cerrar entrega con tags finales".
+4. interfaz-web: mismos cambios de README (la sección compartida debe ser idéntica: compruébalo con diff), entrada 8d, typecheck y test 25/25. Commit + push con el mismo mensaje.
+5. Tags anotados sobre esos dos commits y push:
+   v1.1-base "Entrega 1 final: consola (evaluable)" en main
+   v2.3-web "Versión 3 final: web mejorada" en interfaz-web
+6. Termina en main. Enséñame git show-ref --tags -d, git log --oneline -3 main, git log --oneline -3 interfaz-web y git status -sb.
+````
+
+- **Objetivo:** cerrar la entrega sin capturas: completar el registro del 8c, quitar las referencias a `docs/capturas/`, apuntar las versiones 1 y 3 a sus tags finales y etiquetar.
+- **Verificación en navegador:** el usuario confirmó las versiones 1 y 3.
+- **Ficheros modificados:**
+  - `README.md`: "Verlo sin ejecutar nada" queda solo con los enlaces al código de cada tag y al PR (sin tablas de capturas); versión 1 → `v1.1-base`, versión 3 → `v2.3-web` (tabla y enlaces); `docs/capturas/` fuera del árbol del proyecto. La sección "Cómo ver cada versión" es idéntica en las dos ramas (comprobado con `diff`).
+  - `EVALUACION.md` (nota de seguimiento: tag `v1.1-base` creado), `SEGUIMIENTO.md`: final literal del prompt del 8c, hash del 8c (`5a2bf1a`) y esta entrada.
+- **Ficheros borrados:** `docs/capturas/.gitkeep` (y con él la carpeta `docs/`).
+- **Sin cambios:** `src/`, `package.json`, `tsconfig.json`. Tags existentes sin mover.
+- **Verificación:** `git diff v1.0-base -- src/ package.json tsconfig.json` → vacío; `npm run typecheck` → exit 0; `npm run test` → `Pruebas superadas: 20/20`.
+- **Tag:** `v1.1-base` (anotado) sobre el commit de esta entrada.
+- **Nota:** el último commit de cada rama no puede registrar su propio hash (cambiaría al escribirlo). El de este prompt queda en `git log` y en el tag `v1.1-base`.
+- **Errores:** ninguno.
+- **Estado:** OK
+- **Commit:** no registrable (último commit de la rama; ver tag `v1.1-base`)
