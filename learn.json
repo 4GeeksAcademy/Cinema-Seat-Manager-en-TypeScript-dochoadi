@@ -1,13 +1,13 @@
 {
   "autoPlay": false,
   "title": {
-    "en": "Hello World with Typescript",
-    "es": "Hola Mundo con Typescript"
+    "en": "Cinema Seat Manager in TypeScript",
+    "es": "Cinema Seat Manager en TypeScript"
   },
-  "slug": "typescript-hello",
+  "slug": "cinema-seat-manager",
   "description": {
-    "en": "Starter template for Vite + TypeScript projects with Tailwind CSS v4 preconfigured.",
-    "es": "Plantilla inicial para proyectos con Vite + TypeScript con Tailwind CSS v4 preconfigurado."
+    "en": "Command-line prototype for box-office staff to manage seat bookings in an 8x10 cinema room using a two-dimensional array.",
+    "es": "Prototipo de línea de comandos para que el personal de taquilla gestione las reservas de una sala de cine de 8x10 usando un arreglo bidimensional."
   },
   "projectType": "template",
   "difficulty": "beginner",
