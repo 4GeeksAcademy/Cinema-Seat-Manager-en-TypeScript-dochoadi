@@ -10,18 +10,83 @@ npm run test        # debe terminar con "Pruebas superadas: 20/20" (exit 0)
 npm run typecheck   # tsc --noEmit, sin errores
 ```
 
-## Entregas
+## Cómo ver cada versión
 
-| Entrega | Qué incluye | Dónde está | Cómo ejecutarla |
-|---------|-------------|------------|-----------------|
-| **1 · Base (evaluable)** | Gestor de asientos por consola: matriz 8x10, reservas con validación, conteo, búsqueda de contiguos y 5 escenarios de prueba. | Rama `main`, tag `v1.0-base`. | `npm install` → `npm run test` |
-| **2 · Interfaz web (opcional, fuera de evaluación)** | Mapa de sala clicable para taquilla con HTML + Tailwind, reutilizando `src/cinema.ts`. | Rama `interfaz-web`, tag `v2.0-web`, Pull Request abierto hacia `main`. | `git fetch && git switch interfaz-web` → `npm install` → `npm run dev` → pestaña **Puertos**, puerto **5173** (privado) |
+El proyecto tiene tres versiones. La **evaluada es la 1**; la 2 es el reto extra tal como lo pide el enunciado y la 3 es una mejora propia sobre la 2.
+La 2 y la 3 parten de la 1 y no modifican su comportamiento.
 
-- Enlaces: [rama `interfaz-web`](../../tree/interfaz-web) · [cambios respecto a `main`](../../compare/main...interfaz-web) · [releases](../../releases)
-- **En Codespaces:** botón **Code** → **Codespaces** → elige la rama (`main` o `interfaz-web`) **antes** de crear el codespace.
-- La Entrega 2 parte de la Entrega 1 y **no modifica su comportamiento**.
+| Versión | Qué es | Evaluada | Dónde | Comando |
+|---------|--------|----------|-------|---------|
+| **1 · Consola** | Gestor de asientos por línea de comandos: matriz 8x10, reservas con validación, conteo, búsqueda de contiguos y 5 escenarios de prueba. | **Sí** | rama [`main`](../../tree/main) · tag [`v1.0-base`](../../tree/v1.0-base) | `npm run test` |
+| **2 · Web básica** (reto extra solicitado) | Mapa de sala clicable con HTML + Tailwind, reutilizando `src/cinema.ts`. | No | tag [`v2.0-web`](../../tree/v2.0-web) | `npm run dev` |
+| **3 · Web mejorada** | Cartelera de una película inventada, butacas de cine, pantalla curva y panel de taquilla. | No | rama [`interfaz-web`](../../tree/interfaz-web) · tag [`v2.1-web`](../../tree/v2.1-web) | `npm run dev` |
 
-> `main` es la versión evaluada. La rama `interfaz-web` añade además `liberarAsiento` y su escenario de prueba, por eso su total de pruebas es mayor.
+### Verlo sin ejecutar nada
+
+| Versión 1 · Consola | Versión 2 · Web básica |
+|---------------------|------------------------|
+| ![Salida de npm run test en la versión 1](docs/capturas/v1-consola.png) | ![Interfaz web básica de la versión 2](docs/capturas/v2-web-basica.png) |
+
+| Versión 3 · Web mejorada (escritorio) | Versión 3 · Web mejorada (móvil) |
+|---------------------------------------|----------------------------------|
+| ![Interfaz web mejorada de la versión 3 en escritorio](docs/capturas/v3-web-mejorada.png) | ![Interfaz web mejorada de la versión 3 en móvil](docs/capturas/v3-web-mejorada-movil.png) |
+
+- Código de cada versión: [`v1.0-base`](../../tree/v1.0-base) · [`v2.0-web`](../../tree/v2.0-web) · [`v2.1-web`](../../tree/v2.1-web)
+- Cambios de la web respecto a la consola: [Pull Request abierto](../../pulls) (no se fusiona hasta después de la evaluación).
+
+### Ejecutarlo en Codespaces
+
+Abre el repositorio en un Codespace (botón **Code** → **Codespaces**). En la terminal:
+
+**Versión 1 · Consola**
+
+```bash
+git switch main
+npm install
+npm run test        # debe terminar con "Pruebas superadas: 20/20"
+```
+
+**Versión 2 · Web básica**
+
+```bash
+git fetch --tags
+git switch --detach v2.0-web
+npm install
+npm run dev
+```
+
+Después: pestaña **Puertos** → puerto **5173** → icono del globo (abrir en el navegador).
+
+**Versión 3 · Web mejorada**
+
+```bash
+git switch interfaz-web
+npm install
+npm run dev
+```
+
+Igual que la versión 2: pestaña **Puertos** → puerto **5173** → icono del globo. Si antes se veía otra versión, recarga con **Ctrl+Shift+R**.
+
+**Volver:** `Ctrl+C` para parar el servidor y `git switch main`.
+
+Notas:
+
+- Ejecuta `npm install` cada vez que cambies de versión: las dependencias pueden variar entre versiones.
+- `--detach` deja el repositorio en modo de solo lectura de esa versión; es normal el aviso de *detached HEAD*.
+- El puerto 5173 debe quedarse en **Privado**.
+
+### Ejecutarlo en local
+
+Requisitos: **Node 20** y **git**.
+
+```bash
+git clone https://github.com/4GeeksAcademy/Cinema-Seat-Manager-en-TypeScript-dochoadi.git
+cd Cinema-Seat-Manager-en-TypeScript-dochoadi
+```
+
+Después, los mismos pasos que en Codespaces para cada versión. En local, la web se abre en `http://localhost:5173`.
+
+> El total de pruebas es **20/20** en la versión 1 y **25/25** en las versiones 2 y 3 (añaden `liberarAsiento` y su escenario de prueba).
 
 ## Cómo ejecutarlo
 
@@ -99,6 +164,7 @@ El cumplimiento de cada criterio de evaluación, con su evidencia, está en [EVA
 .
 ├── .claude/skills/cinema-seat-manager/SKILL.md   # reglas y protocolo del proyecto
 ├── .devcontainer/devcontainer.json               # Codespaces (Node 20)
+├── docs/capturas/                                # capturas de cada versión
 ├── src/
 │   ├── cinema.ts        # lógica: matriz y funciones
 │   ├── main.ts          # guion de pruebas por consola
