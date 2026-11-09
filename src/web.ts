@@ -5,7 +5,9 @@
  * pinta la matriz y conecta los controles. El estado de la página es:
  *   - `sala`: la matriz `number[][]` (0 libre, 1 ocupado);
  *   - `parResaltado`: el par propuesto `[[f, c], [f, c + 1]]` o `null`;
- *   - `historial`: pila `[[fila, columna], ...]` de reservas para deshacer.
+ *   - `historial`: pila `[[fila, columna], ...]` de reservas para deshacer;
+ *   - `paresRechazados`: posiciones `[[fila, columna], ...]` de los pares ya
+ *     propuestos en la búsqueda actual ("Otra opción").
  *
  * Los datos de la película (inventada) llegan de `src/pelicula.json`, la
  * única estructura de datos fuera de la matriz; aquí no hay literales `{…}`.
@@ -51,6 +53,7 @@ const CLASES_BOTON_BUTACA =
 let sala: SalaMatriz = cargarSala();
 let parResaltado: number[][] | null = null;
 let historial: number[][] = [];
+let paresRechazados: number[][] = [];
 
 // ---------------------------------------------------------------------------
 // Utilidades de DOM
@@ -480,6 +483,7 @@ function pintar(): void {
   obtenerElemento("barra-ocupacion").style.width = `${porcentaje}%`;
 
   obtenerElemento<HTMLButtonElement>("boton-reservar-par").disabled = parResaltado === null;
+  obtenerElemento("boton-buscar-par").textContent = paresRechazados.length === 0 ? "Buscar 2 juntos" : "Otra opción";
   obtenerElemento<HTMLButtonElement>("boton-deshacer").disabled = historial.length === 0;
 }
 
@@ -517,16 +521,51 @@ function anotar(mensaje: string): void {
  *
  * @param fila - Índice de fila.
  * @param columna - Índice de columna.
- * @returns Mensaje devuelto por `reservarAsiento`.
+ * @returns `true` si la butaca se ha reservado (la sala ha cambiado).
  */
-function reservarYRegistrar(fila: number, columna: number): string {
+function reservarYRegistrar(fila: number, columna: number): boolean {
   const ocupadosAntes = contarAsientos(sala)[0];
   const mensaje = reservarAsiento(sala, fila, columna);
-  if (contarAsientos(sala)[0] > ocupadosAntes) {
+  const reservada = contarAsientos(sala)[0] > ocupadosAntes;
+  if (reservada) {
     historial.push([fila, columna]);
   }
   anotar(mensaje);
-  return mensaje;
+  return reservada;
+}
+
+/**
+ * Reinicia la búsqueda de pareja: quita el par resaltado y olvida los pares
+ * ya propuestos, de modo que el botón vuelve a "Buscar 2 juntos". Se llama
+ * tras cualquier cambio en la sala (reserva, anulación, deshacer o nueva
+ * sesión).
+ *
+ * @returns Nada.
+ */
+function reiniciarBusqueda(): void {
+  parResaltado = null;
+  paresRechazados = [];
+}
+
+/**
+ * Copia la sala con bucles, sin modificar la original, y marca como
+ * ocupadas (1) las posiciones de los pares ya propuestos.
+ *
+ * @returns Copia de la sala para buscar la siguiente pareja.
+ */
+function copiarSalaSinRechazados(): SalaMatriz {
+  const copia: SalaMatriz = [];
+  for (let fila = 0; fila < sala.length; fila++) {
+    const asientosDeLaFila: number[] = [];
+    for (let columna = 0; columna < sala[fila].length; columna++) {
+      asientosDeLaFila.push(sala[fila][columna]);
+    }
+    copia.push(asientosDeLaFila);
+  }
+  for (let indice = 0; indice < paresRechazados.length; indice++) {
+    copia[paresRechazados[indice][0]][paresRechazados[indice][1]] = 1;
+  }
+  return copia;
 }
 
 /**
@@ -538,9 +577,8 @@ function reservarYRegistrar(fila: number, columna: number): string {
  * @returns Nada.
  */
 function reservarDesdeMapa(fila: number, columna: number): void {
-  reservarYRegistrar(fila, columna);
-  if (esPropuesto(fila, columna)) {
-    parResaltado = null;
+  if (reservarYRegistrar(fila, columna)) {
+    reiniciarBusqueda();
   }
   guardarSala();
   pintar();
@@ -573,18 +611,34 @@ function moverFoco(evento: KeyboardEvent, fila: number, columna: number): void {
 }
 
 /**
- * "Buscar 2 juntos": resalta el par de `buscarAsientosContiguos` y pone el
- * foco en su primera butaca; si no hay par, muestra el aviso.
+ * "Buscar 2 juntos" / "Otra opción": propone la siguiente pareja libre.
+ *
+ * Reutiliza `buscarAsientosContiguos` sobre una copia de la sala en la que
+ * los pares ya propuestos cuentan como ocupados, así cada pulsación ofrece
+ * un par nuevo (y el registro no repite entradas). Si no quedan más, avisa
+ * y reinicia la búsqueda; si la sala no tiene ningún par, muestra el aviso
+ * habitual.
  *
  * @returns Nada.
  */
 function buscarPar(): void {
-  parResaltado = buscarAsientosContiguos(sala);
-  anotar(mensajeResultadoContiguos(parResaltado, sala));
-  pintar();
-  if (parResaltado !== null) {
-    obtenerElemento(idAsiento(parResaltado[0][0], parResaltado[0][1])).focus();
+  const siguientePar = buscarAsientosContiguos(copiarSalaSinRechazados());
+  if (siguientePar === null) {
+    if (paresRechazados.length === 0) {
+      parResaltado = null;
+      anotar(mensajeResultadoContiguos(null, sala));
+    } else {
+      reiniciarBusqueda();
+      anotar("No hay más parejas disponibles; volvemos a la primera opción.");
+    }
+    pintar();
+    return;
   }
+  parResaltado = siguientePar;
+  paresRechazados.push(siguientePar[0], siguientePar[1]);
+  anotar(mensajeResultadoContiguos(siguientePar, sala));
+  pintar();
+  obtenerElemento(idAsiento(siguientePar[0][0], siguientePar[0][1])).focus();
 }
 
 /**
@@ -597,7 +651,7 @@ function reservarPar(): void {
     return;
   }
   const par = parResaltado;
-  parResaltado = null;
+  reiniciarBusqueda();
   for (let indice = 0; indice < par.length; indice++) {
     reservarYRegistrar(par[indice][0], par[indice][1]);
   }
@@ -621,9 +675,8 @@ function reservaRapida(evento: SubmitEvent): void {
     anotar("⚠️ Indique fila y asiento.");
     return;
   }
-  reservarYRegistrar(fila, columna);
-  if (esPropuesto(fila, columna)) {
-    parResaltado = null;
+  if (reservarYRegistrar(fila, columna)) {
+    reiniciarBusqueda();
   }
   guardarSala();
   pintar();
@@ -642,7 +695,7 @@ function deshacer(): void {
     return;
   }
   anotar(liberarAsiento(sala, ultima[0], ultima[1]));
-  parResaltado = null;
+  reiniciarBusqueda();
   guardarSala();
   pintar();
 }
@@ -657,8 +710,8 @@ function nuevaSesion(): void {
     return;
   }
   sala = crearSala(FILAS, COLUMNAS);
-  parResaltado = null;
   historial = [];
+  reiniciarBusqueda();
   guardarSala();
   anotar("🆕 Nueva sesión: todas las butacas libres");
   pintar();

@@ -18,6 +18,7 @@ Registro cronológico de cada prompt aplicado al repositorio, según el protocol
 | 7b | Cartelera de película inventada y butacas SVG (rama `interfaz-web`) | OK |
 | 7c | Cómo ver cada versión (README en `main` e `interfaz-web`) | OK |
 | 8a | Cabecera sin desbordamiento, butaca propuesta sin ✓, README unificado (rama `interfaz-web`) | OK |
+| 8c | "Otra opción" en la búsqueda de pareja (rama `interfaz-web`) | OK |
 
 ---
 
@@ -1469,4 +1470,83 @@ Usa la skill cinema-seat-manager. NUNCA muevas ni borres tags existentes.
   - **No verificado por el asistente:** el layout real. Se intentó usar Chromium headless en el scratchpad, pero faltan librerías del sistema (`libnss3`, `libgbm`, `libasound`…) y sin root no pueden instalarse. jsdom no calcula el layout. La comprobación visual a 1280, 1024 y 390 px queda para el usuario.
 - **Errores:** ninguno.
 - **Estado:** OK
-- **Commit:** pendiente (se registra en el Prompt 8b)
+- **Commit:** `e433b74`
+
+---
+
+## Prompt 8c — "Otra opción" en la búsqueda de pareja (rama `interfaz-web`)
+
+- **Fecha:** 2026-11-09
+- **Rama de esta entrada:** `interfaz-web` (parte B). La parte A (`index.html` mínima en `main`, commit `5a2bf1a`) se registra en el SEGUIMIENTO de `main`.
+- **Prompt literal** (llegó cortado al final, en el punto 10: "…reservar el"; se registra tal cual):
+
+`````text
+Usa la skill cinema-seat-manager. NUNCA muevas ni borres tags existentes. Etiqueta solo después de que yo confirme en el navegador.
+
+PARTE A — main (git switch main)
+1. index.html: sustitúyelo por una página mínima con Tailwind (la de la plantilla carga /rigo-baby.jpg, que no existe, y ejecuta el guion de consola en el navegador). Contenido: título "Cinema Seat Manager · Versión 1 (consola)", explicación de que esta versión se usa con `npm run test` en la terminal, y enlaces a las versiones web (rama interfaz-web y tags v2.0-web / v2.2-web en GitHub). No debe importar src/main.ts. No toques src/, package.json ni tsconfig.json.
+2. Verifica: git diff v1.0-base -- src/ package.json tsconfig.json vacío; npm run typecheck; npm run test (20/20); vite build.
+3. EVALUACION.md: en la sección "Evaluación final independiente", añade una nota de seguimiento: el hallazgo "restos de la plantilla web en main" queda resuelto en v1.1-base; src/ idéntico al evaluado (con el diff vacío como evidencia). Los tres hallazgos cosméticos quedan documentados sin cambios para no alterar el código evaluado.
+4. SEGUIMIENTO.md: rellena el Commit del Prompt 8b con a862aba; entrada del Prompt 8c (main).
+5. Commit + push (SIN tag todavía):
+   fix: sustituir index.html de plantilla en la versión de consola
+   (cuerpo: "Prompt 8c: resuelve el hallazgo de la evaluación independiente; src/ sin cambios respecto a v1.0-base.")
+
+PARTE B — interfaz-web (git switch interfaz-web)
+6. "Buscar 2 juntos":
+   - Problema: cada pulsación propone el mismo par y repite la entrada en el registro.
+   - NO modifiques buscarAsientosContiguos ni nada de src/cinema.ts.
+   - En web.ts: guarda las posiciones de los pares ya propuestos en un number[][] (paresRechazados). Para buscar la siguiente opción, crea una COPIA de la sala (bucles, sin mutar la original), marca como 1 las posiciones rechazadas y llama a buscarAsientosContiguos(copia).
+   - Tras la primera búsqueda, el botón pasa a "Otra opción". El registro solo anota un par cuando es nuevo.
+   - Si no quedan más pares: mensaje "No hay más parejas disponibles; volvemos a la primera opción." y reinicia paresRechazados (la siguiente pulsación vuelve a proponer el primero).
+   - Cualquier reserva, anulación, deshacer o nueva sesión reinicia la búsqueda (el botón vuelve a "Buscar 2 juntos").
+   - Si la sala no tiene ningún par, sigue mostrando el mensaje actual de "no hay contiguos".
+7. Desbordamiento: medido en mi navegador con getBoundingClientRect, ningún elemento sobrepasa innerWidth y scrollWidth > innerWidth es false. El arreglo del 8a funciona: NO cambies el layout. Anótalo en SEGUIMIENTO.md como verificación manual del 8a.
+8. Verifica: src/cinema.ts y src/main.ts sin cambios (diff vacío respecto a v2.2-web); npm run typecheck; npm run test (25/25); vite build. Actualiza README (sección web: comportamiento de "Otra opción"), SEGUIMIENTO.md (entrada 8c rama; rellena el Commit del Prompt 8a rama con e433b74).
+9. Commit + push (SIN tag todavía):
+   fix(web): proponer otra pareja en cada búsqueda
+   (cuerpo: "Prompt 8c: 'Otra opción' recorre los pares disponibles reutilizando buscarAsientosContiguos sobre una copia de la sala; registro sin duplicados.")
+
+PARTE C — antes de etiquetar
+10. Deja arrancado npm run dev en interfaz-web y dime qué tengo que comprobar en el navegador (pulsar "Otra opción" varias veces hasta el reinicio, reservar el
+`````
+
+- **Verificación manual del Prompt 8a (hecha por el usuario en su navegador):** midió con `getBoundingClientRect` que ningún elemento sobrepasa `innerWidth` y que `scrollWidth > innerWidth` es `false`. El arreglo de la cabecera y del formulario funciona; **el layout no se toca** en este prompt.
+- **Objetivo:** que "Buscar 2 juntos" deje de proponer siempre el mismo par y de repetir la entrada en el registro.
+- **Ficheros modificados:**
+  - `src/web.ts`:
+    - nuevo estado `paresRechazados: number[][]` con las posiciones de los pares ya propuestos;
+    - `copiarSalaSinRechazados()`: copia la sala con bucles, sin mutar la original, y marca como 1 las posiciones rechazadas;
+    - `buscarPar()`: llama a `buscarAsientosContiguos(copia)`. Si encuentra par, lo resalta, lo apila y lo anota. Si no lo encuentra y ya había propuestas, avisa «No hay más parejas disponibles; volvemos a la primera opción.» y reinicia. Si la sala no tiene ningún par, muestra el mensaje habitual de `mensajeResultadoContiguos`;
+    - `reiniciarBusqueda()`: vacía `parResaltado` y `paresRechazados`. Se llama tras una reserva con éxito (mapa, reserva rápida, reservar par), al deshacer y en una nueva sesión;
+    - `reservarYRegistrar()` ahora devuelve `boolean` (si la butaca se reservó), para reiniciar la búsqueda solo cuando la sala cambia; un clic sobre una butaca ocupada no la reinicia;
+    - `pintar()` pone la etiqueta del botón: "Buscar 2 juntos" si no hay propuestas en curso y "Otra opción" si las hay.
+  - `README.md`: comportamiento de "Otra opción" en la sección de la interfaz web.
+  - `SEGUIMIENTO.md`: hash del Prompt 8a en esta rama (`e433b74`) y esta entrada.
+  - **Sin cambios:** `src/cinema.ts`, `src/main.ts` e `index.html` (`git diff v2.2-web -- src/cinema.ts src/main.ts index.html` → vacío).
+- **Consecuencia del diseño pedido:** como se bloquean las dos butacas de cada par propuesto, las opciones no se solapan. En una fila vacía se ofrecen (0,0)-(0,1), (0,2)-(0,3)…, pero no (0,1)-(0,2).
+- **`npm run typecheck`:** exit 0. **`npm run test`:** `Pruebas superadas: 25/25`. **`vite build`:** OK.
+- **Checklist anti-objetos (`src/web.ts`):** sin `interface`, `Map`, `Set`, `this` ni literales `{…}`; `process` solo en el comentario de cabecera. JSDoc 27/27.
+- **Prueba jsdom (fuera del repo):** `Interfaz (jsdom): 43/43`. Bloque nuevo:
+
+```text
+Otra opción (Prompt 8c)
+  ✔ etiqueta inicial: Buscar 2 juntos
+  ✔ 1ª búsqueda: 💑 Asientos contiguos disponibles: fila 0, asientos 0 y 1 / botón Otra opción
+  ✔ 2ª búsqueda: 💑 Asientos contiguos disponibles: fila 0, asientos 2 y 3 (registro 2)
+  ✔ la sala original no se modifica: 0 / 80 / 0 %
+  ✔ reservar reinicia la búsqueda: botón Buscar 2 juntos
+  ✔ tras reiniciar vuelve al primero: 💑 Asientos contiguos disponibles: fila 0, asientos 0 y 1
+  ✔ deshacer reinicia: botón Buscar 2 juntos
+  ✔ sala con 2 pares → 💑 Asientos contiguos disponibles: fila 1, asientos 1 y 2 | 💑 Asientos contiguos disponibles: fila 5, asientos 7 y 8
+  ✔ sin más pares: No hay más parejas disponibles; volvemos a la primera opción. / botón Buscar 2 juntos
+  ✔ siguiente pulsación vuelve al primero: 💑 Asientos contiguos disponibles: fila 1, asientos 1 y 2 (registro 4)
+  ✔ sala sin pares: mensaje habitual y botón Buscar 2 juntos
+
+Interfaz (jsdom): 43/43
+```
+
+- **Tag:** **no creado**; queda a la espera de que el usuario confirme en el navegador.
+- **Errores:** ninguno.
+- **Estado:** OK
+- **Commit:** pendiente (se registra en el siguiente prompt)
