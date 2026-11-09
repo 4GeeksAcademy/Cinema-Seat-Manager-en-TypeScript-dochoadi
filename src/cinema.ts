@@ -120,7 +120,7 @@ export function mostrarSala(sala: SalaMatriz): void {
  */
 export function reservarAsiento(sala: SalaMatriz, fila: number, columna: number): string {
   if (sala.length === 0) {
-    return "⚠️ La sala no tiene asientos: no se puede reservar.";
+    return "⚠️ Sala sin asientos: no se puede reservar.";
   }
   const totalFilas = sala.length;
   const totalColumnas = sala[0].length;
@@ -130,11 +130,11 @@ export function reservarAsiento(sala: SalaMatriz, fila: number, columna: number)
 
   if (!filaValida || !columnaValida) {
     return (
-      `⚠️ La fila ${fila}, asiento ${columna} no es válido. ` +
+      `⚠️ Posición no válida: fila ${fila}, asiento ${columna}. ` +
       `Valores válidos: fila 0–${totalFilas - 1}, asiento 0–${totalColumnas - 1} (números enteros).`
     );
   } else if (sala[fila][columna] === OCUPADO) {
-    return `❌ La fila ${fila}, asiento ${columna} ya está ocupado`;
+    return `❌ Asiento ocupado: fila ${fila}, asiento ${columna}`;
   } else {
     sala[fila][columna] = OCUPADO;
     return `✅ Reserva confirmada: fila ${fila}, asiento ${columna}`;

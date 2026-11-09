@@ -10,6 +10,7 @@ Registro cronológico de cada prompt aplicado al repositorio, según el protocol
 | 1b | Regla de commit por prompt y sincronización de package-lock.json | OK |
 | 2 | Funcionalidad principal: crearSala, mostrarSala, reservarAsiento, contarAsientos | OK |
 | 3 | Búsqueda de asientos contiguos (while + parada en el primer par) | OK |
+| 4 | Guion de pruebas (5 escenarios + robustez) y corrección de mensajes de reserva | OK |
 
 ---
 
@@ -368,4 +369,247 @@ Comprobaciones:
 - **Checklist anti-objetos:** `grep -nE "\bclass\b|\binterface\b|new Map|new Set" src/` → vacío. Revisión manual: sin literales `{ }` usados como datos (el par se devuelve como arreglo `number[][]`).
 - **Errores:** ninguno.
 - **Estado:** OK
-- **Commit:** pendiente (se registra en el Prompt 4)
+- **Commit:** `3ca827f`
+
+---
+
+## Prompt 4 — Guion de pruebas y corrección de mensajes de reserva
+
+- **Fecha:** 2026-11-09
+- **Prompt literal:**
+
+````text
+Usa la skill cinema-seat-manager.
+
+0. Mantenimiento previo:
+   - SEGUIMIENTO.md: rellena el Commit del Prompt 3 con 3ca827f.
+   - Corrige los mensajes de reservarAsiento con patrón "estado: posición" y concordancia correcta:
+     "✅ Reserva confirmada: fila F, asiento C"
+     "❌ Asiento ocupado: fila F, asiento C"
+     "⚠️ Posición no válida: fila F, asiento C. Valores válidos: fila 0–7, asiento 0–9 (números enteros)."
+   - EVALUACION.md: sustituye todas las referencias a números de línea por "fichero:función" (p. ej. src/cinema.ts:buscarAsientosContiguos). Regístralo solo en SEGUIMIENTO.md como mejora, no en ERRORES.md.
+   - ERRORES.md, añade:
+     ERR-001 — Tipo: salida incorrecta. Prompt: 3. Síntoma: "❌ La fila 2, asiento 3 ya está ocupado" y "⚠️ La fila 9, asiento 0 no es válido" (falta de concordancia de género). Causa raíz: el ejemplo de mensaje incluido en el propio Prompt 3 era incorrecto y se implementó literalmente. Solución: patrón fijo "estado: posición" en los tres mensajes. Verificación: comprobación automática de los tres textos exactos en main.ts (ver salida de npm run test).
+     ERR-002 — Tipo: defecto de especificación (detectado antes de implementar). Prompt: 4 (versión previa del kit). Síntoma: el escenario "sala casi llena con solo asientos sueltos" se definía con un patrón alterno libre/ocupado, que deja la sala al 50 % (40/40) y no cumple "casi llena". Causa raíz: diseño del caso de prueba sin calcular la ocupación resultante. Solución: sala llena con 6 asientos sueltos liberados, sin contiguos (74/6). Verificación: escenario 3 con conteo [74, 6] y contiguos null.
+
+1. Reescribe src/main.ts como el guion de pruebas que verá el evaluador. Para cada escenario imprime un encabezado claro (=== ESCENARIO N: nombre ===), la sala, el conteo, el resultado de buscar contiguos y, donde aplique, intentos de reserva con su mensaje.
+
+Escenarios obligatorios:
+1. Sala vacía: todo libre. Esperado: [0, 80], contiguos [[0,0],[0,1]].
+2. Sala parcialmente ocupada: la sala del enunciado (ya está como literal number[][]). Esperado: [31, 49], contiguos [[0,2],[0,3]]. Incluye una reserva correcta, una reserva sobre un asiento ocupado y una fuera de rango.
+3. Sala casi llena con solo asientos sueltos: sala llena y después libera estas posiciones (ninguna contigua a otra en su fila): [0,0], [1,5], [3,9], [5,2], [7,4], [7,7]. Guárdalas como number[][] y recórrelas con un bucle. Esperado: [74, 6], contiguos null y el mensaje de "no hay contiguos". Reserva uno de los sueltos y comprueba [75, 5].
+4. Sala completamente llena: todo 1. Esperado: [80, 0], contiguos null, y un intento de reserva que falle con "Asiento ocupado".
+5. Flujo real de taquilla: sala vacía → una pareja pide dos juntos → buscarAsientosContiguos → reservar los dos asientos devueltos con reservarAsiento → mostrar sala y conteo [2, 78] → volver a buscar: el siguiente par debe ser [[0,2],[0,3]].
+
+Funciones auxiliares en main.ts con bucles (p. ej. llenarSala(sala) y liberarPosiciones(sala, posiciones)) en lugar de escribir 80 valores a mano. Liberar aquí es preparación de datos de prueba, no una funcionalidad de cinema.ts.
+
+Conserva la prueba de sala vacía (0 filas → null) como escenario extra de robustez.
+
+2. Comprobaciones:
+- verificar(descripcion: string, obtenido: string, esperado: string): void, que imprima "✔ OK" o "✘ FALLO" comparando JSON.stringify.
+- Al final: "Pruebas superadas: N/M". Si alguna falla, process.exitCode = 1.
+- Verifica también los textos exactos de los tres mensajes de reservarAsiento (evidencia de ERR-001).
+
+3. Documentación: EVALUACION.md criterios 7 y 8 y bloque "Pruebas y salida por consola" con evidencia (fragmento de salida y "Pruebas superadas: N/N"). SEGUIMIENTO.md: entrada del Prompt 4 que mencione ERR-001, ERR-002 y la mejora de referencias; Commit "pendiente (se registra en el Prompt 5)".
+
+Ejecuta npm run typecheck y npm run test, pega la salida completa y cierra con un único commit + push:
+test: añadir escenarios de prueba y corregir mensajes de reserva
+(cuerpo: "Prompt 4: cinco escenarios del enunciado (vacía, parcial, casi llena, llena, flujo de taquilla) con verificar() y exit code. Corrige ERR-001 (concordancia de mensajes) y ERR-002 (escenario casi llena al 50 %). Referencias por función en EVALUACION.")
+Enséñame `git log --oneline -2` y `git status -sb`.
+````
+
+- **Objetivo:** convertir `src/main.ts` en el guion de pruebas para el evaluador (5 escenarios del enunciado + robustez, con comprobaciones automáticas y código de salida) y corregir la concordancia de los mensajes de reserva.
+- **Ficheros modificados:**
+  - `src/cinema.ts`: mensajes de `reservarAsiento` con patrón "estado: posición" (corrige **ERR-001**); aviso de sala vacía alineado con ese patrón (`⚠️ Sala sin asientos: no se puede reservar.`).
+  - `src/main.ts`: reescrito como guion de pruebas: `verificar`, `llenarSala`, `liberarPosiciones`, `encabezado`, `mostrarConteo`, `buscarYMostrarContiguos`, `intentarReserva`; escenarios 1–5 + EXTRA; resumen `Pruebas superadas: N/M` y `process.exitCode = 1` si falla alguna.
+  - `package.json` / `package-lock.json`: `@types/node@^20` como devDependency (corrige **ERR-003**).
+  - `ERRORES.md` (ERR-001, ERR-002, ERR-003), `EVALUACION.md` (criterios 3, 4, 7, 8; F6, F7), `SEGUIMIENTO.md` (hash del Prompt 3 y esta entrada).
+- **Ficheros creados:** ninguno.
+- **Mejora (no es error):** en `EVALUACION.md` se han sustituido todas las referencias a números de línea por `fichero:función` (p. ej. `src/cinema.ts:buscarAsientosContiguos`), para que no queden obsoletas al editar el código.
+- **Errores registrados:**
+  - **ERR-001** — concordancia de los mensajes de reserva (origen: ejemplo del Prompt 3). Corregido y verificado con los textos exactos en el escenario 2.
+  - **ERR-002** — escenario "casi llena" al 50 % en una versión previa del kit; se usa sala llena con 6 sueltos (74/6). Verificado en el escenario 3.
+  - **ERR-003** — `TS2580: Cannot find name 'process'` en el primer `npm run typecheck`; resuelto instalando `@types/node@20`.
+- **Decisiones:**
+  - `verificar` respeta la firma pedida (`obtenido` y `esperado` como `string`): los mensajes se pasan tal cual y las tuplas / matrices / `null` se pasan serializados con `JSON.stringify`; dentro, la comparación se hace sobre `JSON.stringify` de ambos textos.
+  - En el escenario 2 se reserva (2,3), que en la sala del enunciado está libre; el segundo intento sobre (2,3) produce el ❌, y (9,0) el ⚠️. Conteo resultante [32, 48], también verificado.
+  - En el escenario 3 se vende el suelto (1,5) → [75, 5]. En el escenario 4 se intenta (4,4).
+- **`npm run typecheck`:** primer intento → `error TS2580` (ERR-003); tras la corrección → sin errores (exit 0).
+- **`npm run test`:** exit 0. Salida completa:
+
+```text
+
+=== ESCENARIO 1: Sala vacía ===
+
+        ══════════ PANTALLA ══════════
+
+          0  1  2  3  4  5  6  7  8  9
+Fila 0 │  L  L  L  L  L  L  L  L  L  L
+Fila 1 │  L  L  L  L  L  L  L  L  L  L
+Fila 2 │  L  L  L  L  L  L  L  L  L  L
+Fila 3 │  L  L  L  L  L  L  L  L  L  L
+Fila 4 │  L  L  L  L  L  L  L  L  L  L
+Fila 5 │  L  L  L  L  L  L  L  L  L  L
+Fila 6 │  L  L  L  L  L  L  L  L  L  L
+Fila 7 │  L  L  L  L  L  L  L  L  L  L
+
+        L = libre · X = ocupado
+        ▲ La pantalla está en la parte superior (fila 0 = más cerca)
+
+Ocupados: 0 · Disponibles: 80 · Total: 80
+💑 Asientos contiguos disponibles: fila 0, asientos 0 y 1
+Comprobaciones:
+  ✔ OK     conteo [ocupados, disponibles] → [0,80]
+  ✔ OK     primer par contiguo → [[0,0],[0,1]]
+
+=== ESCENARIO 2: Sala parcialmente ocupada (sala del enunciado) ===
+
+        ══════════ PANTALLA ══════════
+
+          0  1  2  3  4  5  6  7  8  9
+Fila 0 │  L  X  L  L  X  X  L  L  X  L
+Fila 1 │  X  L  L  X  L  L  X  X  L  X
+Fila 2 │  L  L  X  L  X  L  L  L  X  L
+Fila 3 │  L  X  L  L  L  X  X  L  L  X
+Fila 4 │  X  L  L  X  X  L  L  X  L  L
+Fila 5 │  L  L  X  L  L  X  L  L  X  X
+Fila 6 │  L  X  L  L  X  L  X  L  L  L
+Fila 7 │  X  L  L  X  L  L  L  X  X  L
+
+        L = libre · X = ocupado
+        ▲ La pantalla está en la parte superior (fila 0 = más cerca)
+
+Ocupados: 31 · Disponibles: 49 · Total: 80
+💑 Asientos contiguos disponibles: fila 0, asientos 2 y 3
+Comprobaciones:
+  ✔ OK     conteo [ocupados, disponibles] → [31,49]
+  ✔ OK     primer par contiguo → [[0,2],[0,3]]
+
+Intentos de reserva:
+Reserva (2, 3) → ✅ Reserva confirmada: fila 2, asiento 3
+Reserva (2, 3) → ❌ Asiento ocupado: fila 2, asiento 3
+Reserva (9, 0) → ⚠️ Posición no válida: fila 9, asiento 0. Valores válidos: fila 0–7, asiento 0–9 (números enteros).
+
+        ══════════ PANTALLA ══════════
+
+          0  1  2  3  4  5  6  7  8  9
+Fila 0 │  L  X  L  L  X  X  L  L  X  L
+Fila 1 │  X  L  L  X  L  L  X  X  L  X
+Fila 2 │  L  L  X  X  X  L  L  L  X  L
+Fila 3 │  L  X  L  L  L  X  X  L  L  X
+Fila 4 │  X  L  L  X  X  L  L  X  L  L
+Fila 5 │  L  L  X  L  L  X  L  L  X  X
+Fila 6 │  L  X  L  L  X  L  X  L  L  L
+Fila 7 │  X  L  L  X  L  L  L  X  X  L
+
+        L = libre · X = ocupado
+        ▲ La pantalla está en la parte superior (fila 0 = más cerca)
+
+Ocupados: 32 · Disponibles: 48 · Total: 80
+Comprobaciones (textos exactos de reservarAsiento, ERR-001):
+  ✔ OK     mensaje de reserva correcta → ✅ Reserva confirmada: fila 2, asiento 3
+  ✔ OK     mensaje de asiento ocupado → ❌ Asiento ocupado: fila 2, asiento 3
+  ✔ OK     mensaje de posición no válida → ⚠️ Posición no válida: fila 9, asiento 0. Valores válidos: fila 0–7, asiento 0–9 (números enteros).
+  ✔ OK     conteo tras una reserva → [32,48]
+
+=== ESCENARIO 3: Sala casi llena con solo asientos sueltos ===
+
+        ══════════ PANTALLA ══════════
+
+          0  1  2  3  4  5  6  7  8  9
+Fila 0 │  L  X  X  X  X  X  X  X  X  X
+Fila 1 │  X  X  X  X  X  L  X  X  X  X
+Fila 2 │  X  X  X  X  X  X  X  X  X  X
+Fila 3 │  X  X  X  X  X  X  X  X  X  L
+Fila 4 │  X  X  X  X  X  X  X  X  X  X
+Fila 5 │  X  X  L  X  X  X  X  X  X  X
+Fila 6 │  X  X  X  X  X  X  X  X  X  X
+Fila 7 │  X  X  X  X  L  X  X  L  X  X
+
+        L = libre · X = ocupado
+        ▲ La pantalla está en la parte superior (fila 0 = más cerca)
+
+Ocupados: 74 · Disponibles: 6 · Total: 80
+⚠️ No hay dos asientos contiguos libres en ninguna fila. Ofrezca asientos separados.
+Comprobaciones:
+  ✔ OK     conteo [ocupados, disponibles] → [74,6]
+  ✔ OK     sin asientos contiguos → null
+
+Se vende uno de los asientos sueltos:
+Reserva (1, 5) → ✅ Reserva confirmada: fila 1, asiento 5
+Ocupados: 75 · Disponibles: 5 · Total: 80
+Comprobaciones:
+  ✔ OK     reserva de asiento suelto → ✅ Reserva confirmada: fila 1, asiento 5
+  ✔ OK     conteo tras la reserva → [75,5]
+
+=== ESCENARIO 4: Sala completamente llena ===
+
+        ══════════ PANTALLA ══════════
+
+          0  1  2  3  4  5  6  7  8  9
+Fila 0 │  X  X  X  X  X  X  X  X  X  X
+Fila 1 │  X  X  X  X  X  X  X  X  X  X
+Fila 2 │  X  X  X  X  X  X  X  X  X  X
+Fila 3 │  X  X  X  X  X  X  X  X  X  X
+Fila 4 │  X  X  X  X  X  X  X  X  X  X
+Fila 5 │  X  X  X  X  X  X  X  X  X  X
+Fila 6 │  X  X  X  X  X  X  X  X  X  X
+Fila 7 │  X  X  X  X  X  X  X  X  X  X
+
+        L = libre · X = ocupado
+        ▲ La pantalla está en la parte superior (fila 0 = más cerca)
+
+Ocupados: 80 · Disponibles: 0 · Total: 80
+⚠️ No hay dos asientos contiguos libres en ninguna fila. Ofrezca asientos separados.
+Reserva (4, 4) → ❌ Asiento ocupado: fila 4, asiento 4
+Comprobaciones:
+  ✔ OK     conteo [ocupados, disponibles] → [80,0]
+  ✔ OK     sin asientos contiguos → null
+  ✔ OK     reserva rechazada → ❌ Asiento ocupado: fila 4, asiento 4
+
+=== ESCENARIO 5: Flujo real de taquilla (una pareja pide dos asientos juntos) ===
+Una pareja pide dos asientos juntos. Buscando...
+💑 Asientos contiguos disponibles: fila 0, asientos 0 y 1
+Comprobaciones:
+  ✔ OK     par propuesto → [[0,0],[0,1]]
+
+Reservando los dos asientos propuestos:
+Reserva (0, 0) → ✅ Reserva confirmada: fila 0, asiento 0
+Reserva (0, 1) → ✅ Reserva confirmada: fila 0, asiento 1
+
+        ══════════ PANTALLA ══════════
+
+          0  1  2  3  4  5  6  7  8  9
+Fila 0 │  X  X  L  L  L  L  L  L  L  L
+Fila 1 │  L  L  L  L  L  L  L  L  L  L
+Fila 2 │  L  L  L  L  L  L  L  L  L  L
+Fila 3 │  L  L  L  L  L  L  L  L  L  L
+Fila 4 │  L  L  L  L  L  L  L  L  L  L
+Fila 5 │  L  L  L  L  L  L  L  L  L  L
+Fila 6 │  L  L  L  L  L  L  L  L  L  L
+Fila 7 │  L  L  L  L  L  L  L  L  L  L
+
+        L = libre · X = ocupado
+        ▲ La pantalla está en la parte superior (fila 0 = más cerca)
+
+Ocupados: 2 · Disponibles: 78 · Total: 80
+Siguiente pareja. Buscando...
+💑 Asientos contiguos disponibles: fila 0, asientos 2 y 3
+Comprobaciones:
+  ✔ OK     conteo tras reservar la pareja → [2,78]
+  ✔ OK     siguiente par contiguo → [[0,2],[0,3]]
+
+=== ESCENARIO EXTRA: Robustez: sala sin filas (matriz vacía) ===
+⚠️ La sala no tiene asientos que mostrar.
+⚠️ No hay dos asientos contiguos libres en ninguna fila. Ofrezca asientos separados.
+Comprobaciones:
+  ✔ OK     contiguos en matriz vacía → null
+
+==========================================
+Pruebas superadas: 19/19
+==========================================
+```
+
+- **Checklist anti-objetos:** `grep -nE "\bclass\b|\binterface\b|new Map|new Set" src/` → vacío. Revisión manual: sin literales `{ }` usados como datos (posiciones sueltas como `number[][]`, contadores como variables `let`).
+- **Estado:** OK
+- **Commit:** pendiente (se registra en el Prompt 5)
