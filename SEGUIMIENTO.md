@@ -16,6 +16,7 @@ Registro cronológico de cada prompt aplicado al repositorio, según el protocol
 | 6b | Separar entregas (main + v1.0-base / interfaz-web + v2.0-web) | OK |
 | 7 | Interfaz web de taquilla (rama `interfaz-web`, opcional) | OK |
 | 7b | Cartelera de película inventada y butacas SVG (rama `interfaz-web`) | OK |
+| 7c | Cómo ver cada versión (README en `main` e `interfaz-web`) | OK |
 
 ---
 
@@ -1338,6 +1339,68 @@ Interfaz (jsdom): 30/30
 ```
 
   - **Pendiente de prueba manual del usuario en un navegador real:** aspecto del cartel y de las butacas en claro / oscuro, elevación al pasar el ratón, layout en 3 columnas (≥ 1280 px), en pantallas medianas y en móvil (scroll solo en el mapa), foco visible sobre las butacas y el puerto 5173 en Codespaces.
+- **Errores:** ninguno.
+- **Estado:** OK
+- **Commit:** pendiente (se registra en el Prompt 8)
+
+---
+
+## Prompt 7c — Cómo ver cada versión (README en `main` e `interfaz-web`)
+
+- **Fecha:** 2026-11-09
+- **Rama de esta entrada:** `interfaz-web`. El mismo prompt se aplica en `main` y en `interfaz-web`, con un commit en cada rama.
+- **Prompt literal:**
+
+````text
+Usa la skill cinema-seat-manager. Vamos a añadir al README una sección "Cómo ver cada versión" IDÉNTICA en main y en interfaz-web. Solo documentación: no toques código, tsconfig ni package.json. Los tags existentes (v1.0-base, v2.0-web, v2.1-web) NO se mueven.
+
+1. Texto de la sección (mismo contenido en ambas ramas), justo después de "Verificar en 30 segundos" (sustituye a la sección "Entregas" si existe, conservando su información):
+
+## Cómo ver cada versión
+Introducción de 2 líneas: el proyecto tiene tres versiones; la evaluada es la 1; la 2 es el reto extra tal como lo pide el enunciado; la 3 es una mejora propia sobre la 2.
+
+Tabla: Versión | Qué es | Evaluada | Dónde (rama/tag con enlace relativo) | Comando
+- 1 · Consola — gestor de asientos por línea de comandos (matriz 8x10, reservas, conteo, contiguos, 5 escenarios). Sí. main · tag v1.0-base. npm run test
+- 2 · Web básica (reto extra solicitado) — mapa clicable con HTML + Tailwind reutilizando src/cinema.ts. No. tag v2.0-web. npm run dev
+- 3 · Web mejorada — cartelera de película inventada, butacas de cine, pantalla curva, panel de taquilla. No. rama interfaz-web · tag v2.1-web. npm run dev
+
+Subsección "Verlo sin ejecutar nada": una captura por versión (ver punto 2) y enlaces relativos al código de cada tag (../../tree/v1.0-base, ../../tree/v2.0-web, ../../tree/v2.1-web) y al Pull Request abierto (../../pulls).
+
+Subsección "Ejecutarlo en Codespaces", paso a paso para cada versión:
+- Versión 1: git switch main → npm install → npm run test → debe terminar con "Pruebas superadas: 20/20".
+- Versión 2: git fetch --tags → git switch --detach v2.0-web → npm install → npm run dev → pestaña Puertos → puerto 5173 → icono del globo.
+- Versión 3: git switch interfaz-web → npm install → npm run dev → igual que la 2. Recargar con Ctrl+Shift+R si se veía otra versión antes.
+- Volver: Ctrl+C para parar el servidor y git switch main.
+- Notas: npm install al cambiar de versión porque las dependencias pueden variar; "--detach" deja el repo en modo solo lectura de esa versión (es normal el aviso de "detached HEAD"); el puerto debe quedarse en Privado.
+
+Subsección "Ejecutarlo en local": requisitos (Node 20, git) y los mismos pasos tras git clone.
+
+Nota final: el total de pruebas es 20/20 en la versión 1 y 25/25 en las versiones 2 y 3 (añaden liberarAsiento y su escenario).
+
+2. Capturas:
+   - Crea la carpeta docs/capturas/ y referencia en el README estos ficheros: v1-consola.png, v2-web-basica.png, v3-web-mejorada.png, v3-web-mejorada-movil.png.
+   - Si los ficheros no existen todavía, NO inventes imágenes: deja las referencias y dime exactamente qué captura tengo que hacer y dónde subirla. Las subiré yo y luego harás un commit con ellas.
+
+3. Aplicación en las dos ramas:
+   a) En main: edita el README, actualiza SEGUIMIENTO.md (entrada Prompt 7c, Commit "pendiente (se registra en el Prompt 8)"), npm run test (20/20), commit + push:
+      docs: explicar cómo ver cada versión en el README
+      (cuerpo: "Prompt 7c: tabla de versiones (consola evaluada, web básica, web mejorada), pasos para Codespaces y local, capturas en docs/capturas.")
+   b) En interfaz-web: misma sección, palabra por palabra (compruébalo con diff de esa sección entre ramas), SEGUIMIENTO.md, npm run test (25/25), commit + push con el mismo mensaje.
+
+4. Enséñame: git log --oneline -1 main, git log --oneline -1 interfaz-web, git tag -n, el diff de la sección entre ramas (debe estar vacío) y git status -sb. Termina en la rama main.
+````
+
+- **Objetivo:** explicar en el README cómo ver las tres versiones del proyecto (1 consola evaluada, 2 web básica, 3 web mejorada), con una sección idéntica en ambas ramas.
+- **Ficheros creados:** `docs/capturas/.gitkeep` (para que la carpeta exista en el repositorio; git no versiona carpetas vacías).
+- **Ficheros modificados:** `README.md` (la sección "Entregas" se sustituye por "Cómo ver cada versión", conservando su información: ramas, tags, PR, Codespaces por rama y que las versiones web no cambian la 1; el árbol incluye `docs/capturas/`; además, el aviso inicial de la rama pasa de "Entrega 2" a "versión 3 (web mejorada)"), `SEGUIMIENTO.md` (esta entrada).
+- **Sin cambios:** código, `tsconfig.json`, `package.json` y tags existentes.
+- **Decisiones:**
+  - El paso `git clone` de "Ejecutarlo en local" usa la URL real del repositorio en lugar de un marcador.
+  - Las capturas se muestran en dos tablas de 2 columnas (consola y web básica; web mejorada en escritorio y móvil).
+  - La sección se escribió una sola vez y se insertó igual en las dos ramas; se comprobó con `diff` entre ramas (vacío).
+- **Capturas:** las cuatro referencias (`docs/capturas/v1-consola.png`, `v2-web-basica.png`, `v3-web-mejorada.png`, `v3-web-mejorada-movil.png`) **aún no existen**; no se han generado imágenes. Las subirá el usuario y se commitearán en un prompt posterior. Hasta entonces el README muestra las imágenes rotas.
+- **`npm run typecheck`:** exit 0.
+- **`npm run test ; echo "exit: $?"`:** `Pruebas superadas: 25/25` / `exit: 0`.
 - **Errores:** ninguno.
 - **Estado:** OK
 - **Commit:** pendiente (se registra en el Prompt 8)
