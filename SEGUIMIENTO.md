@@ -11,6 +11,7 @@ Registro cronológico de cada prompt aplicado al repositorio, según el protocol
 | 2 | Funcionalidad principal: crearSala, mostrarSala, reservarAsiento, contarAsientos | OK |
 | 3 | Búsqueda de asientos contiguos (while + parada en el primer par) | OK |
 | 4 | Guion de pruebas (5 escenarios + robustez) y corrección de mensajes de reserva | OK |
+| 5 | Auditoría de cumplimiento de criterios (evidencias, prueba de la prueba, riesgos) | OK |
 
 ---
 
@@ -612,4 +613,309 @@ Pruebas superadas: 19/19
 
 - **Checklist anti-objetos:** `grep -nE "\bclass\b|\binterface\b|new Map|new Set" src/` → vacío. Revisión manual: sin literales `{ }` usados como datos (posiciones sueltas como `number[][]`, contadores como variables `let`).
 - **Estado:** OK
-- **Commit:** pendiente (se registra en el Prompt 5)
+- **Commit:** `ce4c417`
+
+---
+
+## Prompt 5 — Auditoría de cumplimiento de criterios
+
+- **Fecha:** 2026-11-09
+- **Prompt literal:**
+
+````text
+Usa la skill cinema-seat-manager. Actúa como evaluador estricto de 4Geeks, no como autor del código.
+
+0. Mantenimiento previo:
+   - SEGUIMIENTO.md: rellena el Commit del Prompt 4 con ce4c417.
+   - main.ts: cambia las etiquetas de los intentos de reserva de "Reserva (F, C) →" a "Reservar fila F, asiento C →" para que todo el guion use la misma notación que los mensajes.
+   - Matriz vacía: buscarAsientosContiguos/mostrarResultadoContiguos no deben sugerir "Ofrezca asientos separados" si la sala no tiene asientos. Usa un aviso propio, p. ej. "⚠️ Sala sin asientos: no hay contiguos que buscar.", sin cambiar el retorno (sigue siendo null). Actualiza su comprobación.
+
+1. Ejecuta y pega la salida de:
+   - npm run typecheck
+   - npm run test ; echo "exit: $?"
+   - grep -nE "\bclass\b|\binterface\b|new Map|new Set|\bthis\b" src/
+   - grep -nE "\bwhile\b" src/
+   - grep -nE "\bfor\b" src/
+   - grep -nE "\bif\b|\belse\b" src/cinema.ts
+
+2. Prueba de la prueba (NO se commitea):
+   - Cambia temporalmente un valor esperado en main.ts (p. ej. [31, 49] → [30, 50]).
+   - Ejecuta npm run test ; echo "exit: $?" y pega la salida: debe aparecer "✘ FALLO", "Pruebas superadas: N-1/N" y exit 1.
+   - Revierte el cambio con git checkout -- src/main.ts (o deshaciéndolo a mano si hay otros cambios pendientes) y confirma de nuevo N/N y exit 0.
+   - Regístralo en EVALUACION.md como evidencia del criterio 7.
+
+3. Revisión manual:
+   - Busca literales de objeto usados como datos ({ ... }) en src/. Cualquier hallazgo → ERRORES.md + corrección.
+   - Confirma que CADA función de src/cinema.ts y src/main.ts tiene JSDoc en español.
+   - Revisa nombres: ninguna variable de una letra salvo índices de bucle claros, ningún nombre en inglés mezclado.
+
+4. EVALUACION.md:
+   - Cada criterio y requisito con "Cómo se cumple", "Dónde" (fichero:función), "Evidencia" (comando + fragmento de salida) y Estado. Ningún ✅ sin evidencia.
+   - Añade la sección "Riesgos conocidos": ERR-000 (imagen vs enunciado), interfaz web fuera de evaluación, vulnerabilidades de npm audit en dependencias de desarrollo de Vite 5 (no se ejecuta audit fix --force para no romper @tailwindcss/vite; no afectan a la CLI), y @types/node visible en todo src/ (en web.ts no debe usarse process).
+
+5. Si algo está ❌, corrígelo, vuelve a ejecutar y actualiza. No cierres hasta que todo esté ✅.
+
+6. SEGUIMIENTO.md: entrada del Prompt 5, Commit "pendiente (se registra en el Prompt 6)".
+
+Cierra con un único commit + push:
+docs: auditar cumplimiento de criterios de evaluación
+(cuerpo: "Prompt 5: auditoría con evidencias por criterio, prueba de detección de fallos (exit 1), riesgos conocidos; etiquetas de reserva unificadas y aviso propio para sala sin asientos.")
+Enséñame `git log --oneline -2` y `git status -sb`.
+````
+
+- **Objetivo:** auditar el proyecto como evaluador estricto: evidencias por criterio, prueba de que el guion detecta fallos, revisión manual de restricciones y estilo, y riesgos conocidos. Mantenimiento: notación única "fila F, asiento C" en las etiquetas y aviso propio para sala sin asientos.
+- **Ficheros modificados:**
+  - `src/cinema.ts`: nueva `mensajeResultadoContiguos(resultado, sala?)` (devuelve el texto); `mostrarResultadoContiguos(resultado, sala?)` la usa. Con una sala sin filas muestra `⚠️ Sala sin asientos: no hay contiguos que buscar.`; `buscarAsientosContiguos` sigue devolviendo `null`.
+  - `src/main.ts`: etiquetas `Reservar fila F, asiento C →`; `buscarYMostrarContiguos` pasa la sala; nueva comprobación del aviso de sala sin asientos (19 → 20 pruebas).
+  - `CONTEXT.md`: funciones de presentación documentadas.
+  - `EVALUACION.md`: reescrito con evidencias por criterio y requisito, estados ✅, prueba de la prueba en el criterio 7 y sección "Riesgos conocidos".
+  - `SEGUIMIENTO.md`: hash del Prompt 4 y esta entrada.
+- **Ficheros creados:** ninguno.
+- **Decisión:** como `mostrarResultadoContiguos` solo recibía el resultado (`null` en ambos casos), no podía distinguir "sala sin asientos" de "sin pares libres". Se añade un segundo parámetro opcional `sala` y se separa el texto en `mensajeResultadoContiguos` para poder verificarlo con `verificar()`. Las llamadas antiguas de un solo argumento siguen funcionando igual.
+- **`npm run typecheck`:** `tsc --noEmit` → exit 0.
+- **`npm run test ; echo "exit: $?"`** (salida completa, estado final):
+
+```text
+
+> cinema-seat-manager@1.0.0 test
+> tsx src/main.ts
+
+
+=== ESCENARIO 1: Sala vacía ===
+
+        ══════════ PANTALLA ══════════
+
+          0  1  2  3  4  5  6  7  8  9
+Fila 0 │  L  L  L  L  L  L  L  L  L  L
+Fila 1 │  L  L  L  L  L  L  L  L  L  L
+Fila 2 │  L  L  L  L  L  L  L  L  L  L
+Fila 3 │  L  L  L  L  L  L  L  L  L  L
+Fila 4 │  L  L  L  L  L  L  L  L  L  L
+Fila 5 │  L  L  L  L  L  L  L  L  L  L
+Fila 6 │  L  L  L  L  L  L  L  L  L  L
+Fila 7 │  L  L  L  L  L  L  L  L  L  L
+
+        L = libre · X = ocupado
+        ▲ La pantalla está en la parte superior (fila 0 = más cerca)
+
+Ocupados: 0 · Disponibles: 80 · Total: 80
+💑 Asientos contiguos disponibles: fila 0, asientos 0 y 1
+Comprobaciones:
+  ✔ OK     conteo [ocupados, disponibles] → [0,80]
+  ✔ OK     primer par contiguo → [[0,0],[0,1]]
+
+=== ESCENARIO 2: Sala parcialmente ocupada (sala del enunciado) ===
+
+        ══════════ PANTALLA ══════════
+
+          0  1  2  3  4  5  6  7  8  9
+Fila 0 │  L  X  L  L  X  X  L  L  X  L
+Fila 1 │  X  L  L  X  L  L  X  X  L  X
+Fila 2 │  L  L  X  L  X  L  L  L  X  L
+Fila 3 │  L  X  L  L  L  X  X  L  L  X
+Fila 4 │  X  L  L  X  X  L  L  X  L  L
+Fila 5 │  L  L  X  L  L  X  L  L  X  X
+Fila 6 │  L  X  L  L  X  L  X  L  L  L
+Fila 7 │  X  L  L  X  L  L  L  X  X  L
+
+        L = libre · X = ocupado
+        ▲ La pantalla está en la parte superior (fila 0 = más cerca)
+
+Ocupados: 31 · Disponibles: 49 · Total: 80
+💑 Asientos contiguos disponibles: fila 0, asientos 2 y 3
+Comprobaciones:
+  ✔ OK     conteo [ocupados, disponibles] → [31,49]
+  ✔ OK     primer par contiguo → [[0,2],[0,3]]
+
+Intentos de reserva:
+Reservar fila 2, asiento 3 → ✅ Reserva confirmada: fila 2, asiento 3
+Reservar fila 2, asiento 3 → ❌ Asiento ocupado: fila 2, asiento 3
+Reservar fila 9, asiento 0 → ⚠️ Posición no válida: fila 9, asiento 0. Valores válidos: fila 0–7, asiento 0–9 (números enteros).
+
+        ══════════ PANTALLA ══════════
+
+          0  1  2  3  4  5  6  7  8  9
+Fila 0 │  L  X  L  L  X  X  L  L  X  L
+Fila 1 │  X  L  L  X  L  L  X  X  L  X
+Fila 2 │  L  L  X  X  X  L  L  L  X  L
+Fila 3 │  L  X  L  L  L  X  X  L  L  X
+Fila 4 │  X  L  L  X  X  L  L  X  L  L
+Fila 5 │  L  L  X  L  L  X  L  L  X  X
+Fila 6 │  L  X  L  L  X  L  X  L  L  L
+Fila 7 │  X  L  L  X  L  L  L  X  X  L
+
+        L = libre · X = ocupado
+        ▲ La pantalla está en la parte superior (fila 0 = más cerca)
+
+Ocupados: 32 · Disponibles: 48 · Total: 80
+Comprobaciones (textos exactos de reservarAsiento, ERR-001):
+  ✔ OK     mensaje de reserva correcta → ✅ Reserva confirmada: fila 2, asiento 3
+  ✔ OK     mensaje de asiento ocupado → ❌ Asiento ocupado: fila 2, asiento 3
+  ✔ OK     mensaje de posición no válida → ⚠️ Posición no válida: fila 9, asiento 0. Valores válidos: fila 0–7, asiento 0–9 (números enteros).
+  ✔ OK     conteo tras una reserva → [32,48]
+
+=== ESCENARIO 3: Sala casi llena con solo asientos sueltos ===
+
+        ══════════ PANTALLA ══════════
+
+          0  1  2  3  4  5  6  7  8  9
+Fila 0 │  L  X  X  X  X  X  X  X  X  X
+Fila 1 │  X  X  X  X  X  L  X  X  X  X
+Fila 2 │  X  X  X  X  X  X  X  X  X  X
+Fila 3 │  X  X  X  X  X  X  X  X  X  L
+Fila 4 │  X  X  X  X  X  X  X  X  X  X
+Fila 5 │  X  X  L  X  X  X  X  X  X  X
+Fila 6 │  X  X  X  X  X  X  X  X  X  X
+Fila 7 │  X  X  X  X  L  X  X  L  X  X
+
+        L = libre · X = ocupado
+        ▲ La pantalla está en la parte superior (fila 0 = más cerca)
+
+Ocupados: 74 · Disponibles: 6 · Total: 80
+⚠️ No hay dos asientos contiguos libres en ninguna fila. Ofrezca asientos separados.
+Comprobaciones:
+  ✔ OK     conteo [ocupados, disponibles] → [74,6]
+  ✔ OK     sin asientos contiguos → null
+
+Se vende uno de los asientos sueltos:
+Reservar fila 1, asiento 5 → ✅ Reserva confirmada: fila 1, asiento 5
+Ocupados: 75 · Disponibles: 5 · Total: 80
+Comprobaciones:
+  ✔ OK     reserva de asiento suelto → ✅ Reserva confirmada: fila 1, asiento 5
+  ✔ OK     conteo tras la reserva → [75,5]
+
+=== ESCENARIO 4: Sala completamente llena ===
+
+        ══════════ PANTALLA ══════════
+
+          0  1  2  3  4  5  6  7  8  9
+Fila 0 │  X  X  X  X  X  X  X  X  X  X
+Fila 1 │  X  X  X  X  X  X  X  X  X  X
+Fila 2 │  X  X  X  X  X  X  X  X  X  X
+Fila 3 │  X  X  X  X  X  X  X  X  X  X
+Fila 4 │  X  X  X  X  X  X  X  X  X  X
+Fila 5 │  X  X  X  X  X  X  X  X  X  X
+Fila 6 │  X  X  X  X  X  X  X  X  X  X
+Fila 7 │  X  X  X  X  X  X  X  X  X  X
+
+        L = libre · X = ocupado
+        ▲ La pantalla está en la parte superior (fila 0 = más cerca)
+
+Ocupados: 80 · Disponibles: 0 · Total: 80
+⚠️ No hay dos asientos contiguos libres en ninguna fila. Ofrezca asientos separados.
+Reservar fila 4, asiento 4 → ❌ Asiento ocupado: fila 4, asiento 4
+Comprobaciones:
+  ✔ OK     conteo [ocupados, disponibles] → [80,0]
+  ✔ OK     sin asientos contiguos → null
+  ✔ OK     reserva rechazada → ❌ Asiento ocupado: fila 4, asiento 4
+
+=== ESCENARIO 5: Flujo real de taquilla (una pareja pide dos asientos juntos) ===
+Una pareja pide dos asientos juntos. Buscando...
+💑 Asientos contiguos disponibles: fila 0, asientos 0 y 1
+Comprobaciones:
+  ✔ OK     par propuesto → [[0,0],[0,1]]
+
+Reservando los dos asientos propuestos:
+Reservar fila 0, asiento 0 → ✅ Reserva confirmada: fila 0, asiento 0
+Reservar fila 0, asiento 1 → ✅ Reserva confirmada: fila 0, asiento 1
+
+        ══════════ PANTALLA ══════════
+
+          0  1  2  3  4  5  6  7  8  9
+Fila 0 │  X  X  L  L  L  L  L  L  L  L
+Fila 1 │  L  L  L  L  L  L  L  L  L  L
+Fila 2 │  L  L  L  L  L  L  L  L  L  L
+Fila 3 │  L  L  L  L  L  L  L  L  L  L
+Fila 4 │  L  L  L  L  L  L  L  L  L  L
+Fila 5 │  L  L  L  L  L  L  L  L  L  L
+Fila 6 │  L  L  L  L  L  L  L  L  L  L
+Fila 7 │  L  L  L  L  L  L  L  L  L  L
+
+        L = libre · X = ocupado
+        ▲ La pantalla está en la parte superior (fila 0 = más cerca)
+
+Ocupados: 2 · Disponibles: 78 · Total: 80
+Siguiente pareja. Buscando...
+💑 Asientos contiguos disponibles: fila 0, asientos 2 y 3
+Comprobaciones:
+  ✔ OK     conteo tras reservar la pareja → [2,78]
+  ✔ OK     siguiente par contiguo → [[0,2],[0,3]]
+
+=== ESCENARIO EXTRA: Robustez: sala sin filas (matriz vacía) ===
+⚠️ La sala no tiene asientos que mostrar.
+⚠️ Sala sin asientos: no hay contiguos que buscar.
+Comprobaciones:
+  ✔ OK     contiguos en matriz vacía → null
+  ✔ OK     aviso propio de sala sin asientos → ⚠️ Sala sin asientos: no hay contiguos que buscar.
+
+==========================================
+Pruebas superadas: 20/20
+==========================================
+exit: 0
+```
+
+- **Greps de auditoría:**
+
+```text
+$ grep -nE "\bclass\b|\binterface\b|new Map|new Set|\bthis\b" src/
+(sin resultados, exit 1)
+
+$ grep -nE "\bwhile\b" src/
+src/cinema.ts:170: * Recorre las filas de arriba abajo (0 → última) con un bucle `while` que se
+src/cinema.ts:183:  while (fila < sala.length && !encontrado) {
+src/cinema.ts:186:    while (columna + 1 < asientosDeLaFila.length && !encontrado) {
+
+$ grep -nE "\bfor\b" src/
+src/cinema.ts:27: * Construye la matriz con dos bucles `for` anidados: el exterior crea cada
+src/cinema.ts:36:  for (let fila = 0; fila < filas; fila++) {
+src/cinema.ts:38:    for (let columna = 0; columna < columnas; columna++) {
+src/cinema.ts:82:  for (let columna = 0; columna < totalColumnas; columna++) {
+src/cinema.ts:88:  for (let fila = 0; fila < totalFilas; fila++) {
+src/cinema.ts:90:    for (let columna = 0; columna < totalColumnas; columna++) {
+src/cinema.ts:147: * Recorre la matriz completa con dos bucles `for` anidados.
+src/cinema.ts:155:  for (let fila = 0; fila < sala.length; fila++) {
+src/cinema.ts:156:    for (let columna = 0; columna < sala[fila].length; columna++) {
+src/main.ts:63:  for (let fila = 0; fila < sala.length; fila++) {
+src/main.ts:64:    for (let columna = 0; columna < sala[fila].length; columna++) {
+src/main.ts:79:  for (let indice = 0; indice < posiciones.length; indice++) {
+src/main.ts:245:  for (let indice = 0; indice < parPareja.length; indice++) {
+
+$ grep -nE "\bif\b|\belse\b" src/cinema.ts
+58:  if (sala.length === 0) {
+92:      if (sala[fila][columna] === OCUPADO) {
+94:      } else {
+122:  if (sala.length === 0) {
+131:  if (!filaValida || !columnaValida) {
+136:  } else if (sala[fila][columna] === OCUPADO) {
+138:  } else {
+157:      if (sala[fila][columna] === OCUPADO) {
+159:      } else {
+187:      if (asientosDeLaFila[columna] === LIBRE && asientosDeLaFila[columna + 1] === LIBRE) {
+193:      } else {
+216:  if (resultado !== null) {
+222:  } else if (sala !== undefined && sala.length === 0) {
+224:  } else {
+```
+
+- **Prueba de la prueba (no commiteada):** `JSON.stringify([31, 49])` → `JSON.stringify([30, 50])` en el escenario 2. Como `main.ts` tenía cambios pendientes del propio prompt, se revirtió a mano (`sed` inverso) y se comprobó con `cmp` que el fichero quedó idéntico al estado previo.
+
+```text
+$ npm run test ; echo "exit: $?"   # con el esperado alterado
+=== ESCENARIO 2: Sala parcialmente ocupada (sala del enunciado) ===
+  ✘ FALLO  conteo [ocupados, disponibles] → obtenido [31,49], esperado [30,50]
+Pruebas superadas: 19/20
+exit: 1
+
+$ npm run test ; echo "exit: $?"   # tras revertir
+Pruebas superadas: 20/20
+exit: 0
+```
+
+- **Revisión manual:**
+  - Literales de objeto como datos en `src/`: **ninguno**. Las únicas `{` fuera de bloques son interpolaciones `${…}` de template strings y los imports con nombre; el par contiguo y las posiciones son `number[][]`.
+  - JSDoc en español: **14/14 funciones** (`cinema.ts`: crearSala, mostrarSala, reservarAsiento, contarAsientos, buscarAsientosContiguos, mensajeResultadoContiguos, mostrarResultadoContiguos; `main.ts`: verificar, llenarSala, liberarPosiciones, encabezado, mostrarConteo, buscarYMostrarContiguos, intentarReserva).
+  - Nombres: ninguna variable de una letra (ni siquiera índices: `fila`, `columna`, `indice`); ningún identificador en inglés.
+- **`npm audit`:** `5 vulnerabilities (1 moderate, 4 high)`; registrado en "Riesgos conocidos". `esbuild` solo se corrige con `--force` (Vite 8, cambio incompatible); `nanoid`, `postcss` y `source-map-js` tendrían arreglo con `npm audit fix` sin `--force`, no aplicado en este prompt.
+- **Errores:** ninguno nuevo (la auditoría no encontró ❌).
+- **Estado:** OK
+- **Commit:** pendiente (se registra en el Prompt 6)

@@ -16,6 +16,7 @@ import {
   buscarAsientosContiguos,
   contarAsientos,
   crearSala,
+  mensajeResultadoContiguos,
   mostrarResultadoContiguos,
   mostrarSala,
   reservarAsiento,
@@ -114,7 +115,7 @@ function mostrarConteo(sala: SalaMatriz): [number, number] {
  */
 function buscarYMostrarContiguos(sala: SalaMatriz): number[][] | null {
   const resultado = buscarAsientosContiguos(sala);
-  mostrarResultadoContiguos(resultado);
+  mostrarResultadoContiguos(resultado, sala);
   return resultado;
 }
 
@@ -128,7 +129,7 @@ function buscarYMostrarContiguos(sala: SalaMatriz): number[][] | null {
  */
 function intentarReserva(sala: SalaMatriz, fila: number, columna: number): string {
   const mensaje = reservarAsiento(sala, fila, columna);
-  console.log(`Reserva (${fila}, ${columna}) → ${mensaje}`);
+  console.log(`Reservar fila ${fila}, asiento ${columna} → ${mensaje}`);
   return mensaje;
 }
 
@@ -262,6 +263,11 @@ mostrarSala(salaSinFilas);
 const contiguosSinFilas = buscarYMostrarContiguos(salaSinFilas);
 console.log("Comprobaciones:");
 verificar("contiguos en matriz vacía", JSON.stringify(contiguosSinFilas), JSON.stringify(null));
+verificar(
+  "aviso propio de sala sin asientos",
+  mensajeResultadoContiguos(contiguosSinFilas, salaSinFilas),
+  "⚠️ Sala sin asientos: no hay contiguos que buscar.",
+);
 
 // ---------------------------------------------------------------------------
 // Resumen

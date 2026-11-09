@@ -201,20 +201,40 @@ export function buscarAsientosContiguos(sala: SalaMatriz): number[][] | null {
 }
 
 /**
+ * Construye el mensaje para taquilla con el resultado de la búsqueda de
+ * asientos contiguos.
+ *
+ * Si la sala no tiene asientos no tiene sentido recomendar asientos
+ * separados, así que se devuelve un aviso propio.
+ *
+ * @param resultado - Par devuelto por `buscarAsientosContiguos`, o `null`.
+ * @param sala - Sala en la que se ha buscado (opcional); permite distinguir
+ *   "sala sin asientos" de "sala sin pares libres".
+ * @returns Texto listo para mostrar al personal de taquilla.
+ */
+export function mensajeResultadoContiguos(resultado: number[][] | null, sala?: SalaMatriz): string {
+  if (resultado !== null) {
+    const [primerAsiento, segundoAsiento] = resultado;
+    return (
+      `💑 Asientos contiguos disponibles: fila ${primerAsiento[0]}, ` +
+      `asientos ${primerAsiento[1]} y ${segundoAsiento[1]}`
+    );
+  } else if (sala !== undefined && sala.length === 0) {
+    return "⚠️ Sala sin asientos: no hay contiguos que buscar.";
+  } else {
+    return "⚠️ No hay dos asientos contiguos libres en ninguna fila. Ofrezca asientos separados.";
+  }
+}
+
+/**
  * Muestra por consola el resultado de la búsqueda de asientos contiguos
  * con un mensaje pensado para el personal de taquilla.
  *
  * @param resultado - Par devuelto por `buscarAsientosContiguos`, o `null`.
+ * @param sala - Sala en la que se ha buscado (opcional); si no tiene
+ *   asientos se muestra un aviso propio en lugar de "Ofrezca asientos separados".
  * @returns Nada; solo escribe en la consola.
  */
-export function mostrarResultadoContiguos(resultado: number[][] | null): void {
-  if (resultado === null) {
-    console.log("⚠️ No hay dos asientos contiguos libres en ninguna fila. Ofrezca asientos separados.");
-  } else {
-    const [primerAsiento, segundoAsiento] = resultado;
-    console.log(
-      `💑 Asientos contiguos disponibles: fila ${primerAsiento[0]}, ` +
-        `asientos ${primerAsiento[1]} y ${segundoAsiento[1]}`,
-    );
-  }
+export function mostrarResultadoContiguos(resultado: number[][] | null, sala?: SalaMatriz): void {
+  console.log(mensajeResultadoContiguos(resultado, sala));
 }

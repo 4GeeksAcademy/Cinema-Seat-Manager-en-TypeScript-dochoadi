@@ -42,6 +42,15 @@ buscarAsientosContiguos(sala: SalaMatriz): number[][] | null // [[f, c], [f, c +
 - `contarAsientos`: recorre la matriz y devuelve la tupla `[ocupados, disponibles]`.
 - `buscarAsientosContiguos`: devuelve el **primer** par horizontal de asientos libres o `null` si no existe.
 
+Funciones de presentación (añadidas en los Prompts 3 y 5):
+
+```ts
+mensajeResultadoContiguos(resultado: number[][] | null, sala?: SalaMatriz): string
+mostrarResultadoContiguos(resultado: number[][] | null, sala?: SalaMatriz): void
+```
+
+- 💑 con el par encontrado; ⚠️ "Ofrezca asientos separados" si no hay par; ⚠️ "Sala sin asientos: no hay contiguos que buscar." si se pasa una sala sin filas.
+
 ## 4. Decisión de diseño: "primer par" contiguo
 
 "Primer par" = recorrido **fila a fila (0 → 7)** y, dentro de cada fila, **columna a columna (0 → 9)**; se devuelve el primer `c` tal que `sala[f][c] === 0 && sala[f][c + 1] === 0`.
