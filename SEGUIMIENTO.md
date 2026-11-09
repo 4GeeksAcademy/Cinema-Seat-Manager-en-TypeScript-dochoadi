@@ -17,6 +17,7 @@ Registro cronológico de cada prompt aplicado al repositorio, según el protocol
 | 7c | Cómo ver cada versión (README en `main` e `interfaz-web`) | OK |
 | 8a | README sin sección duplicada, versión 3 → `v2.2-web` (+ cabecera web en `interfaz-web`) | OK |
 | 8b | Evaluación final independiente de la Entrega 1 (subagente con contexto limpio) | OK |
+| 8c | `index.html` mínima en la versión de consola (rama `main`) | OK |
 
 ---
 
@@ -1269,4 +1270,58 @@ Enséñame: el veredicto global, la tabla de los 8 criterios del evaluador, las 
 - **Sin cambios de código.** `ERRORES.md` no cambia: solo se registrarían hallazgos bloqueantes, y no los hay.
 - **`npm run typecheck`:** exit 0. **`npm run test`:** `Pruebas superadas: 20/20`, exit 0.
 - **Estado:** OK
-- **Commit:** pendiente (último prompt registrado; su hash queda en `git log`)
+- **Commit:** `a862aba`
+
+---
+
+## Prompt 8c — `index.html` mínima en la versión de consola (rama `main`)
+
+- **Fecha:** 2026-11-09
+- **Rama de esta entrada:** `main` (parte A). La parte B se registra en el SEGUIMIENTO de `interfaz-web`.
+- **Prompt literal** (llegó cortado al final, en el punto 10: "…reservar el"; se registra tal cual):
+
+`````text
+Usa la skill cinema-seat-manager. NUNCA muevas ni borres tags existentes. Etiqueta solo después de que yo confirme en el navegador.
+
+PARTE A — main (git switch main)
+1. index.html: sustitúyelo por una página mínima con Tailwind (la de la plantilla carga /rigo-baby.jpg, que no existe, y ejecuta el guion de consola en el navegador). Contenido: título "Cinema Seat Manager · Versión 1 (consola)", explicación de que esta versión se usa con `npm run test` en la terminal, y enlaces a las versiones web (rama interfaz-web y tags v2.0-web / v2.2-web en GitHub). No debe importar src/main.ts. No toques src/, package.json ni tsconfig.json.
+2. Verifica: git diff v1.0-base -- src/ package.json tsconfig.json vacío; npm run typecheck; npm run test (20/20); vite build.
+3. EVALUACION.md: en la sección "Evaluación final independiente", añade una nota de seguimiento: el hallazgo "restos de la plantilla web en main" queda resuelto en v1.1-base; src/ idéntico al evaluado (con el diff vacío como evidencia). Los tres hallazgos cosméticos quedan documentados sin cambios para no alterar el código evaluado.
+4. SEGUIMIENTO.md: rellena el Commit del Prompt 8b con a862aba; entrada del Prompt 8c (main).
+5. Commit + push (SIN tag todavía):
+   fix: sustituir index.html de plantilla en la versión de consola
+   (cuerpo: "Prompt 8c: resuelve el hallazgo de la evaluación independiente; src/ sin cambios respecto a v1.0-base.")
+
+PARTE B — interfaz-web (git switch interfaz-web)
+6. "Buscar 2 juntos":
+   - Problema: cada pulsación propone el mismo par y repite la entrada en el registro.
+   - NO modifiques buscarAsientosContiguos ni nada de src/cinema.ts.
+   - En web.ts: guarda las posiciones de los pares ya propuestos en un number[][] (paresRechazados). Para buscar la siguiente opción, crea una COPIA de la sala (bucles, sin mutar la original), marca como 1 las posiciones rechazadas y llama a buscarAsientosContiguos(copia).
+   - Tras la primera búsqueda, el botón pasa a "Otra opción". El registro solo anota un par cuando es nuevo.
+   - Si no quedan más pares: mensaje "No hay más parejas disponibles; volvemos a la primera opción." y reinicia paresRechazados (la siguiente pulsación vuelve a proponer el primero).
+   - Cualquier reserva, anulación, deshacer o nueva sesión reinicia la búsqueda (el botón vuelve a "Buscar 2 juntos").
+   - Si la sala no tiene ningún par, sigue mostrando el mensaje actual de "no hay contiguos".
+7. Desbordamiento: medido en mi navegador con getBoundingClientRect, ningún elemento sobrepasa innerWidth y scrollWidth > innerWidth es false. El arreglo del 8a funciona: NO cambies el layout. Anótalo en SEGUIMIENTO.md como verificación manual del 8a.
+8. Verifica: src/cinema.ts y src/main.ts sin cambios (diff vacío respecto a v2.2-web); npm run typecheck; npm run test (25/25); vite build. Actualiza README (sección web: comportamiento de "Otra opción"), SEGUIMIENTO.md (entrada 8c rama; rellena el Commit del Prompt 8a rama con e433b74).
+9. Commit + push (SIN tag todavía):
+   fix(web): proponer otra pareja en cada búsqueda
+   (cuerpo: "Prompt 8c: 'Otra opción' recorre los pares disponibles reutilizando buscarAsientosContiguos sobre una copia de la sala; registro sin duplicados.")
+
+PARTE C — antes de etiquetar
+10. Deja arrancado npm run dev en interfaz-web y dime qué tengo que comprobar en el navegador (pulsar "Otra opción" varias veces hasta el reinicio, reservar el
+`````
+
+- **Objetivo:** resolver el hallazgo "restos de la plantilla web en `main`" de la evaluación independiente sin tocar el código evaluado.
+- **Ficheros modificados:**
+  - `index.html`: página mínima con Tailwind (`<link rel="stylesheet" href="/src/style.css">`, sin scripts): título "Cinema Seat Manager · Versión 1 (consola)", cómo usar `npm run test` y enlaces absolutos a GitHub para `v2.0-web`, `v2.2-web` y la rama `interfaz-web`. Modo claro / oscuro.
+  - `EVALUACION.md`: nota "Seguimiento de los hallazgos" al final de la evaluación independiente.
+  - `SEGUIMIENTO.md`: hash del Prompt 8b (`a862aba`) y esta entrada.
+- **Sin cambios:** `src/`, `package.json`, `tsconfig.json`. Tags existentes sin mover.
+- **Verificación:**
+  - `git diff v1.0-base -- src/ package.json tsconfig.json` → vacío.
+  - `npm run typecheck` → exit 0; `npm run test` → `Pruebas superadas: 20/20`.
+  - `vite build` → OK; `dist/index.html` sin `<script>` y sin referencias a `rigo` ni a `main.ts` (`dist/` borrado después).
+- **Tag `v1.1-base`:** **no creado**; queda a la espera de que el usuario confirme la página en el navegador.
+- **Errores:** ninguno.
+- **Estado:** OK
+- **Commit:** pendiente (se registra en el siguiente prompt)

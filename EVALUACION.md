@@ -149,3 +149,12 @@ Cumple los 8 criterios y todos los requisitos del enunciado; todos los casos lí
 4. **(Cosmético) Referencia interna "ERR-001" en la salida de `main.ts`.** La autoevaluación la citaba como evidencia, no como defecto de presentación.
 
 Los hallazgos de mejora y cosméticos quedan documentados aquí, **sin cambios de código**. Como no hay bloqueantes, no se registra nada en `ERRORES.md` ni hace falta una versión `v1.1-base`.
+
+### Seguimiento de los hallazgos (Prompt 8c)
+
+- **"Restos de la plantilla web en `main`" (mejora) → resuelto en `v1.1-base`.** `index.html` se sustituye por una página mínima con Tailwind ("Cinema Seat Manager · Versión 1 (consola)") que explica que esta versión se usa con `npm run test` y enlaza a las versiones web. No carga ningún script: no importa `src/main.ts` ni `/rigo-baby.jpg` (`vite build` → `dist/index.html` sin `<script>`).
+- **El código evaluado no cambia:** `git diff v1.0-base -- src/ package.json tsconfig.json` → **vacío**. `npm run typecheck` → exit 0; `npm run test` → `Pruebas superadas: 20/20`.
+- **Hallazgos cosméticos** (rango "0–-1" con `[[]]`, "L" para valores distintos de 0/1, referencia "ERR-001" en la salida): quedan documentados **sin cambios**, para no alterar el código evaluado.
+- **Avisos de `npm audit`:** sin cambios; ver "Riesgos conocidos".
+- **Tag `v1.1-base`:** pendiente de que el usuario confirme la página en el navegador.
+
